@@ -39,7 +39,9 @@ class ProductDetailsViewModel(
             val pizzaData = menu.pizzas.find { it.id == pizza }
             _state.update {
                 ProductDetailsState.Success(
-                    pizza = pizzaData ?: Pizza()
+                    pizza = pizzaData ?: Pizza(),
+                    toppings = menu.toppings.map { it.toToppingUi() },
+                    totalPrice = pizzaData?.price ?: 0.0
                 )
             }
         }
@@ -47,7 +49,59 @@ class ProductDetailsViewModel(
 
     fun onAction(action: ProductDetailsAction) {
         when (action) {
-            else -> TODO("Handle actions")
+            is ProductDetailsAction.AddTopping -> addTopping(action.id)
+            is ProductDetailsAction.RemoveTopping -> removeTopping(action.id)
+            is ProductDetailsAction.ToppingClick -> onToppingClick(action.id)
+            else -> Unit
+        }
+    }
+
+    private fun onToppingClick(id: String) {
+        addTopping(id)
+    }
+
+    private fun removeTopping(id: String) {
+        _state.update {
+            if (it is ProductDetailsState.Success) {
+                var currentTotal = it.totalPrice
+                it.copy(
+                    toppings = it.toppings.map {
+                        if (it.id == id) {
+                            currentTotal -= it.price
+                            val newCount = it.count - 1
+                            it.copy(count = newCount, plusEnabled = newCount < 3)
+                        } else {
+                            it
+                        }
+                    },
+                    totalPrice = currentTotal
+                )
+            } else {
+                it
+            }
+        }
+    }
+
+    private fun addTopping(id: String) {
+        _state.update { currentState ->
+            if (currentState is ProductDetailsState.Success) {
+                var currentTotal = currentState.totalPrice
+
+                currentState.copy(
+                    toppings = currentState.toppings.map {
+                        if (it.id == id) {
+                            currentTotal += it.price
+                            val newCount = it.count + 1
+                            it.copy(count = newCount, plusEnabled = newCount < 3)
+                        } else {
+                            it
+                        }
+                    },
+                    totalPrice = currentTotal
+                )
+            } else {
+                currentState
+            }
         }
     }
 

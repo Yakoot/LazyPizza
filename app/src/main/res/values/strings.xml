@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Lazy Pizza</string>
     <string name="search_placeholder">Search for delicious food...</string>
+    <string name="add_to_cart">Add to Cart</string>
 </resources>

@@ -4,4 +4,5 @@ import dev.mamkin.lazypizza.home.domain.models.Pizza
 
 sealed interface HomeAction {
     data class PizzaClick(val pizza: String): HomeAction
+    data class SearchInput(val value: String) : HomeAction
 }

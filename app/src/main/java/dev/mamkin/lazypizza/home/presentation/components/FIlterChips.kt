@@ -15,25 +15,28 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 
 @Composable
-fun FilterChips(modifier: Modifier = Modifier) {
+fun FilterChips(
+    modifier: Modifier = Modifier,
+    onClick: (FilterTarget) -> Unit
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         FilterChip(
-            onClick = { /*TODO*/ },
+            onClick = { onClick(FilterTarget.PIZZA)},
             label = "Pizza",
         )
         FilterChip(
-            onClick = { /*TODO*/ },
+            onClick = { onClick(FilterTarget.DRINKS) },
             label = "Drinks",
         )
         FilterChip(
-            onClick = { /*TODO*/ },
+            onClick = { onClick(FilterTarget.SAUCES) },
             label = "Sauces",
         )
         FilterChip(
-            onClick = { /*TODO*/ },
+            onClick = { onClick(FilterTarget.ICECREAM) },
             label = "Ice Cream",
         )
     }
@@ -68,6 +71,12 @@ private fun FilterChip(
 @Composable
 private fun FilterChipsPreview() {
     LazyPizzaTheme {
-        FilterChips()
+        FilterChips(
+            onClick = {}
+        )
     }
+}
+
+enum class FilterTarget {
+    PIZZA, DRINKS, SAUCES, ICECREAM
 }

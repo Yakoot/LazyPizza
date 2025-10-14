@@ -4,6 +4,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 val TextPrimary = Color(0xFF03131F)
+val TextPrimary8 = Color(0x1403131F)
 val TextSecondary = Color(0xFF627686)
 val TextSecondary8 = Color(0x14627686) // 8% of #627686
 val TextOnPrimary = Color(0xFFFFFFFF)
@@ -19,6 +20,7 @@ val Primary8 = Color(0x14F36B50) // 8% of #F36B50
 
 data class ExtendedColors(
     val textPrimary: Color,
+    val textPrimary8: Color,
     val textSecondary: Color,
     val textSecondary8: Color,
     val textOnPrimary: Color,
@@ -36,6 +38,7 @@ data class ExtendedColors(
 val LocalExtendedColors = staticCompositionLocalOf {
     ExtendedColors(
         textPrimary = Color.Unspecified,
+        textPrimary8 = Color.Unspecified,
         textSecondary = Color.Unspecified,
         textSecondary8 = Color.Unspecified,
         textOnPrimary = Color.Unspecified,
@@ -53,6 +56,7 @@ val LocalExtendedColors = staticCompositionLocalOf {
 
 val extendedColors = ExtendedColors(
     textPrimary = TextPrimary,
+    textPrimary8 = TextPrimary8,
     textSecondary = TextSecondary,
     textSecondary8 = TextSecondary8,
     textOnPrimary = TextOnPrimary,

@@ -1,5 +1,6 @@
 package dev.mamkin.lazypizza.home.presentation.home
 
+import android.R.attr.data
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,8 +41,12 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 import dev.mamkin.lazypizza.home.domain.models.Pizza
 import dev.mamkin.lazypizza.home.presentation.components.FilterChips
+import dev.mamkin.lazypizza.home.presentation.components.FilterTarget
+import dev.mamkin.lazypizza.home.presentation.components.OtherCard
+import dev.mamkin.lazypizza.home.presentation.components.OtherCardData
 import dev.mamkin.lazypizza.home.presentation.components.PizzaCard
 import dev.mamkin.lazypizza.home.presentation.components.SearchTextField
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -54,6 +61,7 @@ fun HomeRoot(
         onAction = {
             when (it) {
                 is HomeAction.PizzaClick -> navigateToDetails(it.pizza)
+                else -> viewModel.onAction(it)
             }
         }
     )
@@ -102,6 +110,8 @@ fun HomeScreen(
             )
         }
     ) { contentPadding ->
+        val lazyListState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
         Column(
             modifier = Modifier
                 .padding(contentPadding)
@@ -128,13 +138,38 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
             SearchTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = "",
-                onValueChange = {}
+                value = state.searchValue,
+                onValueChange = {
+                    onAction(HomeAction.SearchInput(it))
+                }
             )
             Spacer(modifier = Modifier.height(12.dp))
-            FilterChips()
+            FilterChips(
+                onClick = {
+                    coroutineScope.launch {
+                        when (it) {
+                            FilterTarget.PIZZA -> {
+                                lazyListState.animateScrollToItem(0)
+                            }
+                            FilterTarget.DRINKS -> {
+                                val drinksIndex = state.menu.pizzas.size + 1
+                                lazyListState.animateScrollToItem(drinksIndex)
+                            }
+                            FilterTarget.SAUCES -> {
+                                val saucesIndex = state.menu.pizzas.size + state.menu.drinks.size + 2
+                                lazyListState.animateScrollToItem(saucesIndex)
+                            }
+                            FilterTarget.ICECREAM -> {
+                                val iceCreamIndex = state.menu.pizzas.size + state.menu.drinks.size + state.menu.sauces.size + 3
+                                lazyListState.animateScrollToItem(iceCreamIndex)
+                            }
+                        }
+                    }
+                }
+            )
             Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(
+                state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (state.menu.pizzas.isNotEmpty()) {
@@ -151,6 +186,75 @@ fun HomeScreen(
                         })
                     }
 
+                }
+
+                if (state.menu.drinks.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "DRINKS",
+                            style = AppTheme.typography.label2SemiBold,
+                            color = AppTheme.colors.textSecondary
+                        )
+                    }
+                    items(state.menu.drinks) {
+                        OtherCard(
+                            data = OtherCardData(
+                                title = it.title,
+                                price = it.price,
+                                count = 0,
+                                image = it.image
+                            ),
+                            onIncrement = {},
+                            onDecrement = {},
+                            onClickAdd = {}
+                        )
+                    }
+                }
+
+                if (state.menu.sauces.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "SAUCES",
+                            style = AppTheme.typography.label2SemiBold,
+                            color = AppTheme.colors.textSecondary
+                        )
+                    }
+                    items(state.menu.sauces) {
+                        OtherCard(
+                            data = OtherCardData(
+                                title = it.title,
+                                price = it.price,
+                                count = 0,
+                                image = it.image
+                            ),
+                            onIncrement = {},
+                            onDecrement = {},
+                            onClickAdd = {}
+                        )
+                    }
+                }
+
+                if (state.menu.iceCreams.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "ICE CREAM",
+                            style = AppTheme.typography.label2SemiBold,
+                            color = AppTheme.colors.textSecondary
+                        )
+                    }
+                    items(state.menu.iceCreams) {
+                        OtherCard(
+                            data = OtherCardData(
+                                title = it.title,
+                                price = it.price,
+                                count = 0,
+                                image = it.image
+                            ),
+                            onIncrement = {},
+                            onDecrement = {},
+                            onClickAdd = {}
+                        )
+                    }
                 }
             }
 

@@ -19,11 +19,31 @@ class FirebaseMenuRepository(
     val firestore: FirebaseFirestore
 ) : MenuRepository {
     override suspend fun getMenu(): Menu = coroutineScope {
-        val pizzasDeferred = async { firestore.collection("pizza").get().await().toObjects(Pizza::class.java) }
-        val iceCreamsDeferred = async { firestore.collection("iceCreams").get().await().toObjects(IceCream::class.java) }
-        val saucesDeferred = async { firestore.collection("sauces").get().await().toObjects(Sauce::class.java) }
-        val drinksDeferred = async { firestore.collection("drinks").get().await().toObjects(Drink::class.java) }
-        val toppingsDeferred = async { firestore.collection("toppings").get().await().toObjects(Topping::class.java) }
+        val pizzasDeferred = async {
+            firestore.collection("pizza").get().await().documents.map { document ->
+                document.toObject(Pizza::class.java)!!.copy(id = document.id)
+            }
+        }
+        val iceCreamsDeferred = async {
+            firestore.collection("iceCreams").get().await().documents.map { document ->
+                document.toObject(IceCream::class.java)!!.copy(id = document.id)
+            }
+        }
+        val saucesDeferred = async {
+            firestore.collection("sauces").get().await().documents.map { document ->
+                document.toObject(Sauce::class.java)!!.copy(id = document.id)
+            }
+        }
+        val drinksDeferred = async {
+            firestore.collection("drinks").get().await().documents.map { document ->
+                document.toObject(Drink::class.java)!!.copy(id = document.id)
+            }
+        }
+        val toppingsDeferred = async {
+            firestore.collection("toppings").get().await().documents.map { document ->
+                document.toObject(Topping::class.java)!!.copy(id = document.id)
+            }
+        }
 
         Menu(
             pizzas = pizzasDeferred.await(),
