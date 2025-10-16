@@ -1,25 +1,29 @@
 package dev.mamkin.lazypizza.home.presentation.home
 
-import android.R.attr.data
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,23 +35,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowWidthSizeClass
 import coil.compose.AsyncImage
 import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
+import dev.mamkin.lazypizza.home.domain.models.Menu
 import dev.mamkin.lazypizza.home.domain.models.Pizza
-import dev.mamkin.lazypizza.home.presentation.components.FilterChips
-import dev.mamkin.lazypizza.home.presentation.components.FilterTarget
-import dev.mamkin.lazypizza.home.presentation.components.OtherCard
-import dev.mamkin.lazypizza.home.presentation.components.OtherCardData
-import dev.mamkin.lazypizza.home.presentation.components.PizzaCard
+import dev.mamkin.lazypizza.home.domain.models.ProductType
+import dev.mamkin.lazypizza.home.presentation.components.NavigationChips
+import dev.mamkin.lazypizza.home.presentation.components.ProductCard
 import dev.mamkin.lazypizza.home.presentation.components.SearchTextField
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import java.util.UUID
 
 @Composable
 fun HomeRoot(
@@ -73,6 +78,9 @@ fun HomeScreen(
     state: HomeState,
     onAction: (HomeAction) -> Unit,
 ) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isWideScreen = windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
+    val columnsCount = if (isWideScreen) 2 else 1
     Scaffold(
         topBar = {
             TopAppBar(
@@ -110,7 +118,7 @@ fun HomeScreen(
             )
         }
     ) { contentPadding ->
-        val lazyListState = rememberLazyListState()
+        val lazyListState = rememberLazyGridState()
         val coroutineScope = rememberCoroutineScope()
         Column(
             modifier = Modifier
@@ -144,130 +152,158 @@ fun HomeScreen(
                 }
             )
             Spacer(modifier = Modifier.height(12.dp))
-            FilterChips(
+            NavigationChips(
                 onClick = {
                     coroutineScope.launch {
-                        when (it) {
-                            FilterTarget.PIZZA -> {
-                                lazyListState.animateScrollToItem(0)
-                            }
-                            FilterTarget.DRINKS -> {
-                                val drinksIndex = state.menu.pizzas.size + 1
-                                lazyListState.animateScrollToItem(drinksIndex)
-                            }
-                            FilterTarget.SAUCES -> {
-                                val saucesIndex = state.menu.pizzas.size + state.menu.drinks.size + 2
-                                lazyListState.animateScrollToItem(saucesIndex)
-                            }
-                            FilterTarget.ICECREAM -> {
-                                val iceCreamIndex = state.menu.pizzas.size + state.menu.drinks.size + state.menu.sauces.size + 3
-                                lazyListState.animateScrollToItem(iceCreamIndex)
+                        lazyListState.animateScrollToItem(it)
+                    }
+                },
+                data = state.navigationChips
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            if (state.noResults) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.no_results),
+                        style = AppTheme.typography.body3Regular,
+                        color = AppTheme.colors.textSecondary
+                    )
+                }
+            } else if (state.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = AppTheme.colors.primary
+                    )
+                }
+            } else {
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxSize(),
+                    state = lazyListState,
+                    columns = GridCells.Fixed(columnsCount),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    state.products.forEach { sectionUi ->
+                        item(span = {GridItemSpan(columnsCount)}) {
+                            Text(
+                                text = sectionUi.title,
+                                style = AppTheme.typography.label2SemiBold,
+                                color = AppTheme.colors.textSecondary
+                            )
+                        }
+                        items(sectionUi.products) {
+                            when(it.type) {
+                                ProductType.PIZZA -> {
+                                    ProductCard(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        data = it,
+                                        onClick = {
+                                            onAction(HomeAction.PizzaClick(it.id))
+                                        }
+                                    )
+                                }
+                                else -> {
+                                    ProductCard(
+                                        data = it,
+                                        onIncrement = {
+                                            onAction(HomeAction.PlusClick(it.id))
+                                        },
+                                        onDecrement = {
+                                            onAction(HomeAction.MinusClick(it.id))
+                                        },
+                                        onClickAdd = {
+                                            onAction(HomeAction.AddClick(it.id))
+                                        },
+                                        onDelete = {
+                                            onAction(HomeAction.DeleteClick(it.id))
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyColumn(
-                state = lazyListState,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (state.menu.pizzas.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "PIZZA",
-                            style = AppTheme.typography.label2SemiBold,
-                            color = AppTheme.colors.textSecondary
-                        )
-                    }
-                    items(state.menu.pizzas) {
-                        PizzaCard(data = it, onClick = {
-                            onAction(HomeAction.PizzaClick(it.id))
-                        })
-                    }
-
-                }
-
-                if (state.menu.drinks.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "DRINKS",
-                            style = AppTheme.typography.label2SemiBold,
-                            color = AppTheme.colors.textSecondary
-                        )
-                    }
-                    items(state.menu.drinks) {
-                        OtherCard(
-                            data = OtherCardData(
-                                title = it.title,
-                                price = it.price,
-                                count = 0,
-                                image = it.image
-                            ),
-                            onIncrement = {},
-                            onDecrement = {},
-                            onClickAdd = {}
-                        )
-                    }
-                }
-
-                if (state.menu.sauces.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "SAUCES",
-                            style = AppTheme.typography.label2SemiBold,
-                            color = AppTheme.colors.textSecondary
-                        )
-                    }
-                    items(state.menu.sauces) {
-                        OtherCard(
-                            data = OtherCardData(
-                                title = it.title,
-                                price = it.price,
-                                count = 0,
-                                image = it.image
-                            ),
-                            onIncrement = {},
-                            onDecrement = {},
-                            onClickAdd = {}
-                        )
-                    }
-                }
-
-                if (state.menu.iceCreams.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "ICE CREAM",
-                            style = AppTheme.typography.label2SemiBold,
-                            color = AppTheme.colors.textSecondary
-                        )
-                    }
-                    items(state.menu.iceCreams) {
-                        OtherCard(
-                            data = OtherCardData(
-                                title = it.title,
-                                price = it.price,
-                                count = 0,
-                                image = it.image
-                            ),
-                            onIncrement = {},
-                            onDecrement = {},
-                            onClickAdd = {}
-                        )
-                    }
-                }
             }
-
         }
     }
 }
 
 @Preview
+@Preview(
+    name = "Tablet",
+    device = "spec:width=1280dp,height=800dp,dpi=240,orientation=portrait",
+    showSystemUi = true,
+)
 @Composable
 private fun Preview() {
     LazyPizzaTheme {
         HomeScreen(
-            state = HomeState(),
+            state = HomeState(
+                isLoading = false,
+                products = Menu(
+                    pizzas = listOf(
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        ),
+                        Pizza(
+                            id = UUID.randomUUID().toString(),
+                            title = "Pizza",
+                            ingredients = "ingredients",
+                            price = 10.0
+                        )
+                    )
+                ).toProductsUi()
+            ),
             onAction = {}
         )
     }

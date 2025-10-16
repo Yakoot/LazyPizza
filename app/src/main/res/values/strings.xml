@@ -2,4 +2,7 @@
     <string name="app_name">Lazy Pizza</string>
     <string name="search_placeholder">Search for delicious food...</string>
     <string name="add_to_cart">Add to Cart</string>
+    <string name="no_results">No results found for your query</string>
+    <string name="add_extra_topping">Add Extra Toppings</string>
+    <string name="add_to_cart_button_text">Add to cart for $%.2f</string>
 </resources>

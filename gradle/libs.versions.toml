@@ -1,18 +1,18 @@
 [versions]
-agp = "9.0.0-alpha08"
+agp = "9.0.0-alpha10"
 coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
 kotlin = "2.2.20"
-composeBom = "2025.09.01"
+composeBom = "2025.10.00"
 splashScreen = "1.0.1"
 koin = "4.1.1"
-nav3Core = "1.0.0-alpha10"
+nav3Core = "1.0.0-alpha11"
 kotlinSerialization = "2.2.20"
 kotlinxSerializationCore = "1.9.0"
 coil = "2.7.0"
-googleServices = "4.4.3"
-firebaseBom = "34.3.0"
+googleServices = "4.4.4"
+firebaseBom = "34.4.0"
 
 
 [libraries]
@@ -25,6 +25,7 @@ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graph
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
 androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
