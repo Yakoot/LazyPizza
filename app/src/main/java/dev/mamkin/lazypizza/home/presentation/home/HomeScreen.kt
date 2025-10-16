@@ -186,7 +186,8 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     state = lazyListState,
                     columns = GridCells.Fixed(columnsCount),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     state.products.forEach { sectionUi ->
                         item(span = {GridItemSpan(columnsCount)}) {
