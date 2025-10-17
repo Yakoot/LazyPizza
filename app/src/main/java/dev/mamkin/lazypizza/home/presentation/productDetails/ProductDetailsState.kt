@@ -4,12 +4,12 @@ import dev.mamkin.lazypizza.home.domain.models.Pizza
 import dev.mamkin.lazypizza.home.domain.models.Topping
 
 sealed interface ProductDetailsState {
-    data object Loading: ProductDetailsState
+    data object Loading : ProductDetailsState
     data class Success(
         val pizza: Pizza,
         val toppings: List<ToppingUi> = emptyList(),
         val totalPrice: Double = 0.0
-    ): ProductDetailsState
+    ) : ProductDetailsState
 }
 
 data class ToppingUi(

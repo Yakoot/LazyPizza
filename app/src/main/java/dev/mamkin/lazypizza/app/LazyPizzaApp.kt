@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.KoinApplication
 import org.koin.core.context.GlobalContext.startKoin
 
 class LazyPizzaApp : Application(), ImageLoaderFactory {

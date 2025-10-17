@@ -1,6 +1,5 @@
 package dev.mamkin.lazypizza.home.presentation.components
 
-import android.R.attr.data
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,8 +47,7 @@ fun ProductCard(
     val isAdded = data.count > 0
     Card(
         modifier = modifier
-            .height(120.dp)
-        ,
+            .height(120.dp),
         border = BorderStroke(
             width = 1.dp,
             color = AppTheme.colors.surfaceHigher

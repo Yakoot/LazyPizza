@@ -1,8 +1,5 @@
 package dev.mamkin.lazypizza.home.presentation.productDetails
 
-import android.R.attr.data
-import android.R.attr.text
-import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -49,7 +45,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -58,10 +53,8 @@ import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.buttons.FilledButton
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
-import dev.mamkin.lazypizza.core.presentation.util.DeviceType
 import dev.mamkin.lazypizza.home.domain.models.Pizza
 import dev.mamkin.lazypizza.home.presentation.components.ToppingCard
-import dev.mamkin.lazypizza.home.presentation.productDetails.ButtonView
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -130,13 +123,13 @@ fun ProductDetailsScreen(
                     modifier = Modifier
                         .padding(it)
                         .fillMaxSize()
-                        .wrapContentSize()
-                    ,
+                        .wrapContentSize(),
                     color = AppTheme.colors.primary
                 )
             }
+
             is ProductDetailsState.Success -> {
-                if(isWideScreen) {
+                if (isWideScreen) {
                     HorizontalLayout(
                         modifier = Modifier.padding(it),
                         leftContent = {
@@ -202,7 +195,7 @@ fun VerticalLayout(
                 .height(240.dp)
                 .background(AppTheme.colors.surfaceHigher)
                 .clip(
-                    RoundedCornerShape(bottomEnd = 16.dp,)
+                    RoundedCornerShape(bottomEnd = 16.dp)
                 )
                 .background(AppTheme.colors.bg)
         ) {
@@ -218,7 +211,7 @@ fun VerticalLayout(
                     shadow = Shadow(4.dp, color = Color(0x0A03131F))
                 )
                 .clip(
-                    RoundedCornerShape(topStart = 16.dp,)
+                    RoundedCornerShape(topStart = 16.dp)
                 )
                 .background(AppTheme.colors.surfaceHigher)
         ) {
@@ -287,8 +280,7 @@ fun PizzaImage(
     AsyncImage(
         modifier = modifier
             .fillMaxWidth()
-            .size(240.dp)
-        ,
+            .size(240.dp),
         model = data.image,
         contentDescription = data.title,
         placeholder = BrushPainter(

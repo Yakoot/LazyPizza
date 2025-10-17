@@ -1,11 +1,9 @@
 package dev.mamkin.lazypizza.home.presentation.home
 
-import android.R.attr.type
 import dev.mamkin.lazypizza.home.domain.models.Menu
 import dev.mamkin.lazypizza.home.domain.models.ProductType
 import dev.mamkin.lazypizza.home.presentation.models.ProductCardUi
 import dev.mamkin.lazypizza.home.presentation.models.toProductCardUi
-import java.util.UUID
 
 data class HomeState(
     val navigationChips: List<NavigationChipData> = emptyList(),

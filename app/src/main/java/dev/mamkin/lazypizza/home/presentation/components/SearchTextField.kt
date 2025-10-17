@@ -1,7 +1,6 @@
 package dev.mamkin.lazypizza.home.presentation.components
 
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -12,7 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme

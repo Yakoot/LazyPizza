@@ -1,6 +1,5 @@
 package dev.mamkin.lazypizza.home.presentation.models
 
-import android.R.attr.type
 import dev.mamkin.lazypizza.home.domain.models.Drink
 import dev.mamkin.lazypizza.home.domain.models.IceCream
 import dev.mamkin.lazypizza.home.domain.models.Pizza

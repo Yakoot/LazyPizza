@@ -129,8 +129,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                ,
+                    .clip(RoundedCornerShape(8.dp)),
                 model = "https://firebasestorage.googleapis.com/v0/b/lazy-pizza-11723.firebasestorage.app/o/banner.webp?alt=media&token=ed92275f-e200-4dc1-9cb8-1f024ba7772d",
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
@@ -190,7 +189,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     state.products.forEach { sectionUi ->
-                        item(span = {GridItemSpan(columnsCount)}) {
+                        item(span = { GridItemSpan(columnsCount) }) {
                             Text(
                                 text = sectionUi.title,
                                 style = AppTheme.typography.label2SemiBold,
@@ -198,7 +197,7 @@ fun HomeScreen(
                             )
                         }
                         items(sectionUi.products) {
-                            when(it.type) {
+                            when (it.type) {
                                 ProductType.PIZZA -> {
                                     ProductCard(
                                         modifier = Modifier.fillMaxWidth(),
@@ -208,6 +207,7 @@ fun HomeScreen(
                                         }
                                     )
                                 }
+
                                 else -> {
                                     ProductCard(
                                         data = it,

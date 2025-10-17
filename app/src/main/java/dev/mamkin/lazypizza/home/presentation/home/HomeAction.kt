@@ -1,9 +1,7 @@
 package dev.mamkin.lazypizza.home.presentation.home
 
-import dev.mamkin.lazypizza.home.domain.models.Pizza
-
 sealed interface HomeAction {
-    data class PizzaClick(val pizza: String): HomeAction
+    data class PizzaClick(val pizza: String) : HomeAction
     data class SearchInput(val value: String) : HomeAction
     data class AddClick(val id: String) : HomeAction
     data class DeleteClick(val id: String) : HomeAction

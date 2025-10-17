@@ -24,14 +24,19 @@ enum class DeviceType {
             return when {
                 widthClass == WindowWidthSizeClass.COMPACT &&
                         heightClass == WindowHeightSizeClass.MEDIUM -> DeviceType.MOBILE_PORTRAIT
+
                 widthClass == WindowWidthSizeClass.COMPACT &&
                         heightClass == WindowHeightSizeClass.EXPANDED -> DeviceType.MOBILE_PORTRAIT
+
                 widthClass == WindowWidthSizeClass.EXPANDED &&
                         heightClass == WindowHeightSizeClass.COMPACT -> DeviceType.MOBILE_LANDSCAPE
+
                 widthClass == WindowWidthSizeClass.MEDIUM &&
                         heightClass == WindowHeightSizeClass.EXPANDED -> DeviceType.TABLET_PORTRAIT
+
                 widthClass == WindowWidthSizeClass.EXPANDED &&
                         heightClass == WindowHeightSizeClass.MEDIUM -> DeviceType.TABLET_LANDSCAPE
+
                 else -> DESKTOP
             }
         }

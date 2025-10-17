@@ -1,6 +1,5 @@
 package dev.mamkin.lazypizza.home.presentation.home
 
-import kotlin.collections.map
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.mamkin.lazypizza.home.domain.MenuRepository
@@ -45,11 +44,13 @@ class HomeViewModel(
             val menu = menuRepository.getMenu()
             initialMenuUi = menu.toProductsUi()
             val navigationChips = initialMenuUi.toNavigationChips()
-            _state.update { it.copy(
-                products = initialMenuUi,
-                navigationChips = navigationChips,
-                isLoading = false
-            ) }
+            _state.update {
+                it.copy(
+                    products = initialMenuUi,
+                    navigationChips = navigationChips,
+                    isLoading = false
+                )
+            }
         }
     }
 

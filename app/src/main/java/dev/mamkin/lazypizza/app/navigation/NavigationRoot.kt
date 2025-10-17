@@ -8,7 +8,6 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import dev.mamkin.lazypizza.home.domain.models.Pizza
 import dev.mamkin.lazypizza.home.presentation.home.HomeRoot
 import dev.mamkin.lazypizza.home.presentation.productDetails.ProductDetailsRoot
 import kotlinx.serialization.Serializable
@@ -46,9 +45,9 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
 }
 
 @Serializable
-data object Home: NavKey
+data object Home : NavKey
 
 @Serializable
 data class ProductDetails(
     val pizza: String
-): NavKey
+) : NavKey
