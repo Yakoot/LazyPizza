@@ -5,4 +5,8 @@
     <string name="no_results">No results found for your query</string>
     <string name="add_extra_topping">Add Extra Toppings</string>
     <string name="add_to_cart_button_text">Add to cart for $%.2f</string>
+    <string name="empty_cart_title">Your Cart Is Empty</string>
+    <string name="empty_cart_description">Head back to the menu and grab a pizza you love.</string>
+    <string name="empty_cart_button">Back to Menu</string>
+    <string name="cart_page_topbar_title">Cart</string>
 </resources>
