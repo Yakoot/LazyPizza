@@ -1,11 +1,9 @@
 package dev.mamkin.lazypizza.core.presentation.designsystem.buttons
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -14,8 +12,8 @@ import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,36 +36,31 @@ fun FilledButton(
     )
     CompositionLocalProvider(LocalRippleConfiguration provides RippleConfiguration(AppTheme.colors.textPrimary)) {
         Button(
-            modifier = modifier,
+            modifier = modifier
+                .height(48.dp)
+                .clip(CircleShape)
+                .then(
+                    if (enabled) {
+                        Modifier.background(brush)
+                    } else {
+                        Modifier.background(AppTheme.colors.textPrimary8)
+                    }
+                ),
             colors = ButtonDefaults.buttonColors(
                 contentColor = AppTheme.colors.textOnPrimary,
                 containerColor = Color.Transparent,
-                disabledContainerColor = AppTheme.colors.textPrimary8,
+                disabledContainerColor = Color.Transparent,
                 disabledContentColor = AppTheme.colors.textPrimary.copy(alpha = 0.38f)
             ),
             enabled = enabled,
-            contentPadding = PaddingValues(),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 9.dp),
             shape = CircleShape,
             onClick = onClick
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (enabled)
-                            Modifier.background(
-                                brush = brush, // Apply gradient
-                                shape = CircleShape // Match button shape
-                            ) else Modifier
-                    )
-                    .padding(horizontal = 24.dp, vertical = 9.dp), // Inner padding
-                contentAlignment = Alignment.Center // Center content
-            ) {
-                Text(
-                    text = text,
-                    style = AppTheme.typography.title3
-                )
-            }
+            Text(
+                text = text,
+                style = AppTheme.typography.title3
+            )
         }
     }
 

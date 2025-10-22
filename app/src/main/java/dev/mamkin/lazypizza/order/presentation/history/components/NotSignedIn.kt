@@ -1,4 +1,4 @@
-package dev.mamkin.lazypizza.order.presentation.cart.components
+package dev.mamkin.lazypizza.order.presentation.history.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +16,7 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 
 @Composable
-fun EmptyCart(
+fun NotSignedIn(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -25,19 +25,20 @@ fun EmptyCart(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(R.string.empty_cart_title),
+            text = stringResource(R.string.history_not_signed_in_title),
             style = AppTheme.typography.title1Medium,
             color = AppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = stringResource(R.string.empty_cart_description),
+            text = stringResource(R.string.history_not_signed_in_description),
             style = AppTheme.typography.body3Regular,
             color = AppTheme.colors.textSecondary
         )
         Spacer(modifier = Modifier.height(20.dp))
         FilledButton(
-            text = stringResource(R.string.empty_cart_button),
+            modifier = Modifier,
+            text = stringResource(R.string.history_not_signed_in_button),
             onClick = onClick,
         )
     }
@@ -47,6 +48,6 @@ fun EmptyCart(
 @Composable
 private fun Preview() {
     LazyPizzaTheme {
-        EmptyCart(onClick = {})
+        NotSignedIn(onClick = {})
     }
 }
