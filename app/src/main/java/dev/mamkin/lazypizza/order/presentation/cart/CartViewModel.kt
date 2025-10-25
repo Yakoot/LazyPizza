@@ -2,12 +2,20 @@ package dev.mamkin.lazypizza.order.presentation.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.mamkin.lazypizza.order.domain.CartRepository
+import dev.mamkin.lazypizza.order.domain.MenuRepository
+import dev.mamkin.lazypizza.order.presentation.models.toProductCardUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class CartViewModel : ViewModel() {
+class CartViewModel(
+    private val menuRepository: MenuRepository,
+    private val cartRepository: CartRepository
+) : ViewModel() {
 
     private var hasLoadedInitialData = false
 
@@ -27,7 +35,25 @@ class CartViewModel : ViewModel() {
         )
 
     private fun loadData() {
-        _state.value = CartState.Empty
+        viewModelScope.launch {
+            val menu = menuRepository.getMenu()
+
+            cartRepository.cart.collectLatest { items ->
+                when {
+                    items.isEmpty() -> {
+                        _state.value = CartState.Empty
+                    }
+
+                    else -> {
+                        _state.value = CartState.Content(
+                            items = items.map { it.toProductCardUi(menu) },
+                            recommended = listOf(),
+                            buttonText = "Checkout"
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun onAction(action: CartAction) {

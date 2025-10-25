@@ -5,61 +5,71 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.mamkin.lazypizza.app.cartDataStore
 import dev.mamkin.lazypizza.order.domain.CartRepository
+import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
 class LocalCartRepository(
     private val context: Context,
-    private val json: Json,
 ) : CartRepository {
     private val cartKey = stringPreferencesKey("cart_data")
 
-    override val cart: Flow<Map<String, Int>> = context.cartDataStore.data
+    override val cart: Flow<List<CartItem>> = context.cartDataStore.data
         .map { preferences ->
-            preferences[cartKey]?.let {
-                json.decodeFromString<Map<String, Int>>(it)
-            } ?: emptyMap()
+            preferences[cartKey]?.takeIf { it.isNotBlank() }?.let {
+                Json.decodeFromString<List<CartItem>>(it)
+            } ?: emptyList()
         }
-    override val cartItemsCount: Flow<Int> = cart.map { it.values.sum() }
 
-    override suspend fun updateCart(cart: Map<String, Int>) {
-        context.cartDataStore.edit { preferences ->
-            preferences[cartKey] = json.encodeToString(cart)
-        }
+    override val cartItemsCount: Flow<Int> = cart.map { items ->
+        items.sumOf { it.quantity }
     }
 
-    override suspend fun addToCart(productId: String) {
-        context.cartDataStore.edit { preferences ->
-            val currentCart = preferences[cartKey]?.let {
-                json.decodeFromString<Map<String, Int>>(it)
-            } ?: emptyMap()
-            val updatedCart = currentCart.toMutableMap()
-            updatedCart[productId] = (updatedCart[productId] ?: 0) + 1
-            preferences[cartKey] = json.encodeToString(updatedCart.toMap())
-        }
+
+    override suspend fun addItem(item: CartItem) {
+        val currentCart = cart.first().toMutableList()
+        currentCart.add(item)
+        updateDataStore(currentCart)
     }
 
-    override suspend fun removeFromCart(productId: String) {
-        context.cartDataStore.edit { preferences ->
-            val currentCart = preferences[cartKey]?.let {
-                json.decodeFromString<Map<String, Int>>(it)
-            } ?: emptyMap()
-            val updatedCart = currentCart.toMutableMap()
-            val currentCount = updatedCart[productId] ?: 0
-            if (currentCount > 1) {
-                updatedCart[productId] = currentCount - 1
-            } else {
-                updatedCart.remove(productId)
+    override suspend fun removeItem(cartItemId: String) {
+        val currentCart = cart.first().toMutableList()
+        currentCart.removeAll { it.id == cartItemId }
+        updateDataStore(currentCart)
+    }
+
+    override suspend fun updateItemQuantity(cartItemId: String, newQuantity: Int) {
+        val currentCart = cart.first().toMutableList()
+        val itemIndex = currentCart.indexOfFirst { it.id == cartItemId }
+
+        if (itemIndex == -1) return // Элемент не найден
+
+        if (newQuantity <= 0) {
+            // Если новое количество 0 или меньше, удаляем элемент
+            currentCart.removeAt(itemIndex)
+        } else {
+            // В противном случае, обновляем его
+            val currentItem = currentCart[itemIndex]
+            val updatedItem = when (currentItem) {
+                is CartItem.Pizza -> currentItem.copy(quantity = newQuantity)
+                is CartItem.Other -> currentItem.copy(quantity = newQuantity)
             }
-
-            preferences[cartKey] = json.encodeToString(updatedCart.toMap())
+            currentCart[itemIndex] = updatedItem
         }
+
+        updateDataStore(currentCart)
     }
+
 
     override suspend fun clearCart() {
+        updateDataStore(emptyList())
+    }
+
+    private suspend fun updateDataStore(items: List<CartItem>) {
         context.cartDataStore.edit { preferences ->
-            preferences[cartKey] = ""
+            preferences[cartKey] = Json.encodeToString(items)
         }
     }
 }

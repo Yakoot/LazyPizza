@@ -216,16 +216,16 @@ fun HomeScreen(
                                 else -> {
                                     ProductCard(
                                         data = it,
-                                        onIncrement = {
+                                        onPlusClick = {
                                             onAction(HomeAction.PlusClick(it.id))
                                         },
-                                        onDecrement = {
+                                        onMinusClick = {
                                             onAction(HomeAction.MinusClick(it.id))
                                         },
-                                        onClickAdd = {
+                                        onAddClick = {
                                             onAction(HomeAction.AddClick(it.id))
                                         },
-                                        onDelete = {
+                                        onDeleteClick = {
                                             onAction(HomeAction.DeleteClick(it.id))
                                         }
                                     )

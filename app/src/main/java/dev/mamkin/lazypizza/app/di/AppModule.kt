@@ -14,7 +14,6 @@ import dev.mamkin.lazypizza.order.presentation.cart.CartViewModel
 import dev.mamkin.lazypizza.order.presentation.home.HomeViewModel
 import dev.mamkin.lazypizza.order.presentation.productDetails.ProductDetailsViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -34,14 +33,9 @@ val appModule = module {
         Firebase.storage
     }
 
-    single {
-        Json
-    }
-
     single<CartRepository> {
         LocalCartRepository(
             context = androidContext(),
-            json = get()
         )
     }
 
@@ -57,7 +51,8 @@ val appModule = module {
     viewModel { parameters ->
         ProductDetailsViewModel(
             pizza = parameters.get(),
-            menuRepository = get()
+            menuRepository = get(),
+            cartRepository = get()
         )
     }
 }

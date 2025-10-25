@@ -150,7 +150,12 @@ fun ProductDetailsScreen(
                                 toppings = state.toppings,
                                 onAction = onAction
                             )
-                            ButtonView(price = state.totalPrice)
+                            ButtonView(
+                                price = state.totalPrice,
+                                onClick = {
+                                    onAction(ProductDetailsAction.AddToCart)
+                                }
+                            )
                         }
                     )
                 } else {
@@ -170,7 +175,12 @@ fun ProductDetailsScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Toppings(toppings = state.toppings, onAction = onAction)
                             }
-                            ButtonView(price = state.totalPrice)
+                            ButtonView(
+                                price = state.totalPrice,
+                                onClick = {
+                                    onAction(ProductDetailsAction.AddToCart)
+                                }
+                            )
                         }
                     )
                 }
@@ -339,7 +349,8 @@ fun Toppings(
 @Composable
 private fun BoxScope.ButtonView(
     modifier: Modifier = Modifier,
-    price: Double = 0.0
+    price: Double = 0.0,
+    onClick: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -363,7 +374,7 @@ private fun BoxScope.ButtonView(
                 .padding(bottom = 16.dp)
                 .fillMaxWidth(),
             text = stringResource(R.string.add_to_cart_button_text, price),
-            onClick = {}
+            onClick = onClick
         )
     }
 }

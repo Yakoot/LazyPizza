@@ -5,4 +5,5 @@ sealed interface ProductDetailsAction {
     data class ToppingClick(val id: String) : ProductDetailsAction
     data class AddTopping(val id: String) : ProductDetailsAction
     data class RemoveTopping(val id: String) : ProductDetailsAction
+    data object AddToCart : ProductDetailsAction
 }

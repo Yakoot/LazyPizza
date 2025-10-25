@@ -3,6 +3,8 @@ package dev.mamkin.lazypizza.order.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.mamkin.lazypizza.order.domain.MenuRepository
+import dev.mamkin.lazypizza.order.presentation.utils.getPriceCalculation
+import dev.mamkin.lazypizza.order.presentation.utils.getTotalPrice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
@@ -98,6 +100,8 @@ class HomeViewModel(
                     val quantityInCart = cart[product.id] ?: 0
                     product.copy(
                         count = quantityInCart,
+                        priceCalculation = getPriceCalculation(product.price, quantityInCart),
+                        totalPrice = getTotalPrice(product.price, quantityInCart)
                     )
                 }
             )
@@ -127,7 +131,11 @@ class HomeViewModel(
             section.copy(
                 products = section.products.map { product ->
                     val quantity = cart[product.id] ?: 0
-                    product.copy(count = quantity)
+                    product.copy(
+                        count = quantity,
+                        priceCalculation = getPriceCalculation(product.price, quantity),
+                        totalPrice = getTotalPrice(product.price, quantity)
+                    )
                 }
             )
         }
