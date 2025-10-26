@@ -58,7 +58,27 @@ class CartViewModel(
 
     fun onAction(action: CartAction) {
         when (action) {
-            else -> TODO("Handle actions")
+            is CartAction.DeleteClick -> onDeleteClick(action.id)
+            is CartAction.MinusClick -> onMinusClick(action.id)
+            is CartAction.PlusClick -> onPlusClick(action.id)
+        }
+    }
+
+    private fun onDeleteClick(id: String) {
+        viewModelScope.launch {
+            cartRepository.removeItem(id)
+        }
+    }
+
+    private fun onMinusClick(id: String) {
+        viewModelScope.launch {
+            cartRepository.decreaseItemById(id)
+        }
+    }
+
+    private fun onPlusClick(id: String) {
+        viewModelScope.launch {
+            cartRepository.increaseItemById(id)
         }
     }
 

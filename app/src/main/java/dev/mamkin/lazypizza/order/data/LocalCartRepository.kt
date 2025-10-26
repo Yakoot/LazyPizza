@@ -40,6 +40,44 @@ class LocalCartRepository(
         updateDataStore(currentCart)
     }
 
+    override suspend fun removeItemByProductId(productId: String) {
+        val currentCart = cart.first().toMutableList()
+        currentCart.removeAll { it.productId == productId }
+        updateDataStore(currentCart)
+    }
+
+    override suspend fun decreaseItemByProductId(productId: String) {
+        val currentCart = cart.first().toMutableList()
+        val item = currentCart.find { it.productId == productId }
+        if (item != null) {
+            updateItemQuantity(item.id, item.quantity - 1)
+        }
+    }
+
+    override suspend fun increaseItemByProductId(productId: String) {
+        val currentCart = cart.first().toMutableList()
+        val item = currentCart.find { it.productId == productId }
+        if (item != null) {
+            updateItemQuantity(item.id, item.quantity + 1)
+        }
+    }
+
+    override suspend fun increaseItemById(id: String) {
+        val currentCart = cart.first().toMutableList()
+        val item = currentCart.find { it.id == id }
+        if (item != null) {
+            updateItemQuantity(item.id, item.quantity + 1)
+        }
+    }
+
+    override suspend fun decreaseItemById(id: String) {
+        val currentCart = cart.first().toMutableList()
+        val item = currentCart.find { it.id == id }
+        if (item != null) {
+            updateItemQuantity(item.id, item.quantity - 1)
+        }
+    }
+
     override suspend fun updateItemQuantity(cartItemId: String, newQuantity: Int) {
         val currentCart = cart.first().toMutableList()
         val itemIndex = currentCart.indexOfFirst { it.id == cartItemId }

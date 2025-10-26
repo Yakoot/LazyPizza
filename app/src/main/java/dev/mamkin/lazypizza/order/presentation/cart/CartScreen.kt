@@ -96,7 +96,16 @@ fun CartScreen(
                     ) {
                         items(state.items) {
                             ProductCard(
-                                data = it
+                                data = it,
+                                onDeleteClick = {
+                                    onAction(CartAction.DeleteClick(it.id))
+                                },
+                                onPlusClick = {
+                                    onAction(CartAction.PlusClick(it.id))
+                                },
+                                onMinusClick = {
+                                    onAction(CartAction.MinusClick(it.id))
+                                }
                             )
                         }
                         item {

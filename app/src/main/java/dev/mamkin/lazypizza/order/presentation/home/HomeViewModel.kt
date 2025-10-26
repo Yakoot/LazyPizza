@@ -6,11 +6,12 @@ import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
 import dev.mamkin.lazypizza.order.domain.models.ProductType
 import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
+import dev.mamkin.lazypizza.order.presentation.utils.formatPrice
 import dev.mamkin.lazypizza.order.presentation.utils.getPriceCalculation
-import dev.mamkin.lazypizza.order.presentation.utils.getTotalPrice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -23,7 +24,7 @@ class HomeViewModel(
     private var hasLoadedInitialData = false
     private var initialMenuUi = emptyList<ProductSectionUi>()
 
-    private var cart = mutableMapOf<String, Int>()
+    private val _searchQuery = MutableStateFlow("")
 
     private val _state = MutableStateFlow(
         HomeState(
@@ -34,7 +35,8 @@ class HomeViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 /** Load initial data here **/
-                loadData()
+                loadMenu()
+                observeSearchAndCart()
                 hasLoadedInitialData = true
             }
         }
@@ -46,43 +48,65 @@ class HomeViewModel(
             )
         )
 
-    fun loadData() {
+    private fun observeSearchAndCart() {
         viewModelScope.launch {
-            val initialCart = cartRepository.cart.first()
-            cart = initialCart
-                .filterIsInstance<CartItem.Other>()
-                .associate { it.productId to it.quantity }
-                .toMutableMap()
-            val menu = menuRepository.getMenu()
-            initialMenuUi = menu.toProductsUi().map { productsSection ->
-                val type = productsSection.products.firstOrNull()?.type
-                when (type) {
-                    null -> productsSection
-                    ProductType.PIZZA -> productsSection
-                    else -> {
-                        val newProducts = productsSection.products.map { product ->
-                            val quantity: Int = cart[product.id] ?: 0
-                            product.copy(
-                                count = quantity,
-                                priceCalculation = getPriceCalculation(product.price, quantity)
-                            )
+            combine(
+                _searchQuery,
+                cartRepository.cart
+            ) { query, cart ->
+                // Получаем актуальную карту товаров в корзине
+                val itemsMap = cart
+                    .filterIsInstance<CartItem.Other>()
+                    .associate { it.productId to it.quantity }
 
+                // Шаг 1: Фильтрация меню по поисковому запросу
+                val filteredMenu = if (query.isBlank()) {
+                    initialMenuUi
+                } else {
+                    initialMenuUi
+                        .map { section ->
+                            section.copy(products = section.products.filter { product ->
+                                product.title.contains(query, ignoreCase = true)
+                            })
                         }
-                        productsSection.copy(
-                            products = newProducts
+                        .filter { it.products.isNotEmpty() }
+                }
+
+                // Шаг 2: Обновление отфильтрованного меню данными из корзины
+                val newMenuUi = filteredMenu.map { productsSection ->
+                    val newProducts = productsSection.products.map { product ->
+                        val quantity = itemsMap[product.id] ?: 0
+                        product.copy(
+                            count = quantity,
+                            priceCalculation = getPriceCalculation(product.price, quantity),
+                            totalPriceText = formatPrice(product.price * quantity),
+                            showAddButton = quantity == 0 && product.type != ProductType.PIZZA
                         )
                     }
+                    productsSection.copy(products = newProducts)
                 }
-            }
-            val navigationChips = initialMenuUi.toNavigationChips()
-            _state.update {
-                it.copy(
-                    products = initialMenuUi,
-                    navigationChips = navigationChips,
-                    isLoading = false
-                )
-            }
+
+                // Шаг 3: Обновление состояния UI
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        searchValue = query,
+                        products = newMenuUi,
+                        navigationChips = newMenuUi.toNavigationChips(),
+                        noResults = newMenuUi.isEmpty() && query.isNotBlank()
+                    )
+                }
+            }.collect()
         }
+    }
+
+    suspend fun loadMenu() {
+        val menu = menuRepository.getMenu()
+        initialMenuUi = menu.toProductsUi()
+    }
+
+    private fun onSearchInput(value: String) {
+        _searchQuery.value = value
     }
 
     fun onAction(action: HomeAction) {
@@ -97,7 +121,6 @@ class HomeViewModel(
     }
 
     private fun onAddClick(id: String, type: ProductType) {
-        cart[id] = 1
         viewModelScope.launch {
             cartRepository.addItem(
                 CartItem.Other(
@@ -107,84 +130,23 @@ class HomeViewModel(
                 )
             )
         }
-        updateStateWithCart()
     }
 
     private fun onDeleteClick(id: String) {
-        cart.remove(id)
-        updateStateWithCart()
+        viewModelScope.launch {
+            cartRepository.removeItemByProductId(id)
+        }
     }
 
     private fun onMinusClick(id: String) {
-        val currentQuantity = cart[id] ?: return
-        if (currentQuantity > 1) {
-            cart[id] = currentQuantity - 1
-        } else {
-            cart.remove(id)
+        viewModelScope.launch {
+            cartRepository.decreaseItemByProductId(id)
         }
-        updateStateWithCart()
     }
 
     private fun onPlusClick(id: String) {
-        val currentQuantity = cart[id] ?: 0
-        cart[id] = currentQuantity + 1
-        updateStateWithCart()
-    }
-
-    private fun updateStateWithCart(productsToUpdate: List<ProductSectionUi> = _state.value.products) {
-        val updatedProducts = productsToUpdate.map { section ->
-            section.copy(
-                products = section.products.map { product ->
-                    val quantityInCart = cart[product.id] ?: 0
-                    product.copy(
-                        count = quantityInCart,
-                        priceCalculation = getPriceCalculation(product.price, quantityInCart),
-                        totalPriceText = getTotalPrice(product.price, quantityInCart)
-                    )
-                }
-            )
-        }
-
-        _state.update {
-            it.copy(
-                products = updatedProducts
-            )
-        }
-    }
-
-    private fun onSearchInput(value: String) {
-        val filteredMenu = if (value.isBlank()) {
-            initialMenuUi
-        } else {
-            initialMenuUi
-                .map { section ->
-                    section.copy(products = section.products.filter { product ->
-                        product.title.contains(value, ignoreCase = true)
-                    })
-                }
-                .filter { section -> section.products.isNotEmpty() }
-        }
-
-        val productsWithCartState = filteredMenu.map { section ->
-            section.copy(
-                products = section.products.map { product ->
-                    val quantity = cart[product.id] ?: 0
-                    product.copy(
-                        count = quantity,
-                        priceCalculation = getPriceCalculation(product.price, quantity),
-                        totalPriceText = getTotalPrice(product.price, quantity)
-                    )
-                }
-            )
-        }
-
-        _state.update {
-            it.copy(
-                searchValue = value,
-                products = productsWithCartState,
-                navigationChips = productsWithCartState.toNavigationChips(),
-                noResults = productsWithCartState.isEmpty()
-            )
+        viewModelScope.launch {
+            cartRepository.increaseItemByProductId(id)
         }
     }
 }
