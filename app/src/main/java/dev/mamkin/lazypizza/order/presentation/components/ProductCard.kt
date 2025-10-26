@@ -139,12 +139,12 @@ fun ProductCard(
                             horizontalAlignment = Alignment.End
                         ) {
                             Text(
-                                text = data.totalPrice ?: "",
+                                text = data.totalPriceText,
                                 style = AppTheme.typography.title1SemiBold,
                                 color = AppTheme.colors.textPrimary
                             )
                             Text(
-                                text = data.priceCalculation ?: "",
+                                text = data.priceCalculation,
                                 style = AppTheme.typography.body4Regular,
                                 color = AppTheme.colors.textSecondary
                             )

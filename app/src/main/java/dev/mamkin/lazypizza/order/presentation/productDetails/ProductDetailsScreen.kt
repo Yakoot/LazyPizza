@@ -53,7 +53,7 @@ import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.buttons.FilledButton
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
-import dev.mamkin.lazypizza.order.domain.models.Pizza
+import dev.mamkin.lazypizza.order.domain.models.MenuItem
 import dev.mamkin.lazypizza.order.presentation.components.ToppingCard
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -263,7 +263,7 @@ fun HorizontalLayout(
 @Composable
 fun PizzaInfo(
     modifier: Modifier = Modifier,
-    data: Pizza
+    data: MenuItem.Pizza
 ) {
     Column(
         modifier = modifier
@@ -285,7 +285,7 @@ fun PizzaInfo(
 @Composable
 fun PizzaImage(
     modifier: Modifier = Modifier,
-    data: Pizza
+    data: MenuItem.Pizza
 ) {
     AsyncImage(
         modifier = modifier
@@ -386,7 +386,7 @@ private fun Preview() {
         ProductDetailsScreen(
             state = ProductDetailsState.Success(
                 totalPrice = 12.99,
-                pizza = Pizza(
+                pizza = MenuItem.Pizza(
                     id = "1",
                     title = "Four cheese",
                     price = 10.0,

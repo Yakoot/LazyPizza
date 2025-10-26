@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
-import dev.mamkin.lazypizza.order.domain.models.Pizza
-import dev.mamkin.lazypizza.order.domain.models.Topping
+import dev.mamkin.lazypizza.order.domain.models.MenuItem
 import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
 import dev.mamkin.lazypizza.order.domain.models.cart.ToppingItem
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +22,7 @@ class ProductDetailsViewModel(
 
     private var hasLoadedInitialData = false
     private var selectedToppings: Map<String, Int> = emptyMap()
-    private var allToppings: List<Topping> = emptyList()
+    private var allToppings: List<MenuItem.Topping> = emptyList()
     private var basePizzaPrice: Double = 0.0
 
 
@@ -50,7 +49,7 @@ class ProductDetailsViewModel(
             basePizzaPrice = pizzaData?.price ?: 0.0
             _state.update {
                 ProductDetailsState.Success(
-                    pizza = pizzaData ?: Pizza(),
+                    pizza = pizzaData ?: MenuItem.Pizza(),
                     toppings = menu.toppings.map { it.toToppingUi() },
                     totalPrice = pizzaData?.price ?: 0.0
                 )
@@ -58,10 +57,11 @@ class ProductDetailsViewModel(
         }
     }
 
-    private fun updateState(pizzaData: Pizza? = null) {
+    private fun updateState(pizzaData: MenuItem.Pizza? = null) {
         _state.update { currentState ->
             val pizza =
-                pizzaData ?: (currentState as? ProductDetailsState.Success)?.pizza ?: Pizza()
+                pizzaData ?: (currentState as? ProductDetailsState.Success)?.pizza
+                ?: MenuItem.Pizza()
 
             val toppingsUi = allToppings.map { topping ->
                 val count = selectedToppings[topping.id] ?: 0

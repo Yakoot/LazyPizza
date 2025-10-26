@@ -176,7 +176,7 @@ private fun Preview() {
                         price = 12.99,
                         count = 4,
                         priceCalculation = "23324234",
-                        totalPrice = "23324234",
+                        totalPriceText = "23324234",
                         image = "",
                         type = ProductType.PIZZA,
                         showAddButton = false
@@ -187,7 +187,7 @@ private fun Preview() {
                         price = 12.99,
                         count = 4,
                         priceCalculation = "23324234",
-                        totalPrice = "23324234",
+                        totalPriceText = "23324234",
                         image = "",
                         type = ProductType.PIZZA,
                         showAddButton = false
@@ -198,7 +198,7 @@ private fun Preview() {
                         price = 12.99,
                         count = 4,
                         priceCalculation = "23324234",
-                        totalPrice = "23324234",
+                        totalPriceText = "23324234",
                         image = "",
                         type = ProductType.PIZZA,
                         showAddButton = false
@@ -209,7 +209,7 @@ private fun Preview() {
                         price = 12.99,
                         count = 4,
                         priceCalculation = "23324234",
-                        totalPrice = "23324234",
+                        totalPriceText = "23324234",
                         image = "",
                         type = ProductType.PIZZA,
                         showAddButton = false
@@ -221,7 +221,7 @@ private fun Preview() {
                         price = 12.99,
                         count = 4,
                         priceCalculation = "23324234",
-                        totalPrice = "23324234",
+                        totalPriceText = "23324234",
                         image = "",
                         type = ProductType.PIZZA,
                         showAddButton = false

@@ -1,12 +1,11 @@
 package dev.mamkin.lazypizza.order.presentation.productDetails
 
-import dev.mamkin.lazypizza.order.domain.models.Pizza
-import dev.mamkin.lazypizza.order.domain.models.Topping
+import dev.mamkin.lazypizza.order.domain.models.MenuItem
 
 sealed interface ProductDetailsState {
     data object Loading : ProductDetailsState
     data class Success(
-        val pizza: Pizza,
+        val pizza: MenuItem.Pizza,
         val toppings: List<ToppingUi> = emptyList(),
         val totalPrice: Double = 0.0
     ) : ProductDetailsState
@@ -22,7 +21,7 @@ data class ToppingUi(
     val minusEnabled: Boolean = true
 )
 
-fun Topping.toToppingUi() = ToppingUi(
+fun MenuItem.Topping.toToppingUi() = ToppingUi(
     id = id,
     title = title,
     price = price,

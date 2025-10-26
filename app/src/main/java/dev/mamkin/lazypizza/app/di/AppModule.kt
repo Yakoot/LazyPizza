@@ -8,6 +8,7 @@ import com.google.firebase.storage.storage
 import dev.mamkin.lazypizza.app.LazyPizzaApp
 import dev.mamkin.lazypizza.order.data.FirebaseMenuRepository
 import dev.mamkin.lazypizza.order.data.LocalCartRepository
+import dev.mamkin.lazypizza.order.data.MenuCache
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
 import dev.mamkin.lazypizza.order.presentation.cart.CartViewModel
@@ -39,9 +40,12 @@ val appModule = module {
         )
     }
 
+    single { MenuCache() }
+
     factory<MenuRepository> {
         FirebaseMenuRepository(
-            firestore = get()
+            firestore = get(),
+            cache = get()
         )
     }
 

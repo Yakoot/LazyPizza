@@ -2,11 +2,15 @@ package dev.mamkin.lazypizza.order.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
+import dev.mamkin.lazypizza.order.domain.models.ProductType
+import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
 import dev.mamkin.lazypizza.order.presentation.utils.getPriceCalculation
 import dev.mamkin.lazypizza.order.presentation.utils.getTotalPrice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -14,11 +18,12 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     val menuRepository: MenuRepository,
+    val cartRepository: CartRepository
 ) : ViewModel() {
     private var hasLoadedInitialData = false
     private var initialMenuUi = emptyList<ProductSectionUi>()
 
-    private val cart = mutableMapOf<String, Int>()
+    private var cart = mutableMapOf<String, Int>()
 
     private val _state = MutableStateFlow(
         HomeState(
@@ -29,7 +34,7 @@ class HomeViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 /** Load initial data here **/
-                loadMenu()
+                loadData()
                 hasLoadedInitialData = true
             }
         }
@@ -41,10 +46,34 @@ class HomeViewModel(
             )
         )
 
-    fun loadMenu() {
+    fun loadData() {
         viewModelScope.launch {
+            val initialCart = cartRepository.cart.first()
+            cart = initialCart
+                .filterIsInstance<CartItem.Other>()
+                .associate { it.productId to it.quantity }
+                .toMutableMap()
             val menu = menuRepository.getMenu()
-            initialMenuUi = menu.toProductsUi()
+            initialMenuUi = menu.toProductsUi().map { productsSection ->
+                val type = productsSection.products.firstOrNull()?.type
+                when (type) {
+                    null -> productsSection
+                    ProductType.PIZZA -> productsSection
+                    else -> {
+                        val newProducts = productsSection.products.map { product ->
+                            val quantity: Int = cart[product.id] ?: 0
+                            product.copy(
+                                count = quantity,
+                                priceCalculation = getPriceCalculation(product.price, quantity)
+                            )
+
+                        }
+                        productsSection.copy(
+                            products = newProducts
+                        )
+                    }
+                }
+            }
             val navigationChips = initialMenuUi.toNavigationChips()
             _state.update {
                 it.copy(
@@ -59,7 +88,7 @@ class HomeViewModel(
     fun onAction(action: HomeAction) {
         when (action) {
             is HomeAction.SearchInput -> onSearchInput(action.value)
-            is HomeAction.AddClick -> onAddClick(action.id)
+            is HomeAction.AddClick -> onAddClick(action.id, action.type)
             is HomeAction.DeleteClick -> onDeleteClick(action.id)
             is HomeAction.MinusClick -> onMinusClick(action.id)
             is HomeAction.PlusClick -> onPlusClick(action.id)
@@ -67,8 +96,17 @@ class HomeViewModel(
         }
     }
 
-    private fun onAddClick(id: String) {
+    private fun onAddClick(id: String, type: ProductType) {
         cart[id] = 1
+        viewModelScope.launch {
+            cartRepository.addItem(
+                CartItem.Other(
+                    productId = id,
+                    quantity = 1,
+                    productType = type
+                )
+            )
+        }
         updateStateWithCart()
     }
 
@@ -101,7 +139,7 @@ class HomeViewModel(
                     product.copy(
                         count = quantityInCart,
                         priceCalculation = getPriceCalculation(product.price, quantityInCart),
-                        totalPrice = getTotalPrice(product.price, quantityInCart)
+                        totalPriceText = getTotalPrice(product.price, quantityInCart)
                     )
                 }
             )
@@ -134,7 +172,7 @@ class HomeViewModel(
                     product.copy(
                         count = quantity,
                         priceCalculation = getPriceCalculation(product.price, quantity),
-                        totalPrice = getTotalPrice(product.price, quantity)
+                        totalPriceText = getTotalPrice(product.price, quantity)
                     )
                 }
             )

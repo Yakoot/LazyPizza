@@ -46,7 +46,7 @@ import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 import dev.mamkin.lazypizza.order.domain.models.Menu
-import dev.mamkin.lazypizza.order.domain.models.Pizza
+import dev.mamkin.lazypizza.order.domain.models.MenuItem
 import dev.mamkin.lazypizza.order.domain.models.ProductType
 import dev.mamkin.lazypizza.order.presentation.components.NavigationChips
 import dev.mamkin.lazypizza.order.presentation.components.ProductCard
@@ -223,7 +223,7 @@ fun HomeScreen(
                                             onAction(HomeAction.MinusClick(it.id))
                                         },
                                         onAddClick = {
-                                            onAction(HomeAction.AddClick(it.id))
+                                            onAction(HomeAction.AddClick(it.id, it.type))
                                         },
                                         onDeleteClick = {
                                             onAction(HomeAction.DeleteClick(it.id))
@@ -253,55 +253,55 @@ private fun Preview() {
                 isLoading = false,
                 products = Menu(
                     pizzas = listOf(
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
                             price = 10.0
                         ),
-                        Pizza(
+                        MenuItem.Pizza(
                             id = UUID.randomUUID().toString(),
                             title = "Pizza",
                             ingredients = "ingredients",
