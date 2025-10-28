@@ -1,6 +1,11 @@
 package dev.mamkin.lazypizza.app.navigation
 
+import android.R.attr.text
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -13,18 +18,23 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
+import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.presentation.cart.CartRoot
 import dev.mamkin.lazypizza.order.presentation.home.HomeRoot
 import dev.mamkin.lazypizza.order.presentation.productDetails.ProductDetailsRoot
 import kotlinx.serialization.Serializable
+import org.koin.compose.koinInject
 
 @Composable
 fun NavigationRoot(modifier: Modifier = Modifier) {
@@ -39,8 +49,10 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
             disabledIconColor = AppTheme.colors.textSecondary,
             disabledTextColor = AppTheme.colors.textSecondary,
         )
-
     )
+
+    val cartRepository: CartRepository = koinInject()
+    val cartItemsCount by cartRepository.cartItemsCount.collectAsStateWithLifecycle(0)
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             TOP_LEVEL_ROUTES.forEach { route ->
@@ -53,10 +65,27 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                         )
                     },
                     icon = {
-                        Icon(
-                            painter = painterResource(id = route.icon),
-                            contentDescription = route.label
-                        )
+                        Box() {
+                            Icon(
+                                painter = painterResource(id = route.icon),
+                                contentDescription = route.label
+                            )
+                            if (route == Cart && cartItemsCount > 0) {
+                                Badge(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = 6.dp, y = (-6).dp)
+                                    ,
+                                    containerColor = AppTheme.colors.primary,
+                                    contentColor = AppTheme.colors.textOnPrimary
+                                ) {
+                                    Text(
+                                        text = cartItemsCount.toString(),
+                                        style = AppTheme.typography.title4
+                                    )
+                                }
+                            }
+                        }
                     },
                     selected = isSelected,
                     onClick = {
