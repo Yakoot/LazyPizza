@@ -1,7 +1,10 @@
 package dev.mamkin.lazypizza.order.presentation.cart
 
+import dev.mamkin.lazypizza.order.domain.models.MenuItem
 import dev.mamkin.lazypizza.order.domain.models.ProductType
 import dev.mamkin.lazypizza.order.presentation.models.ProductCardUi
+import dev.mamkin.lazypizza.order.presentation.models.toProductType
+import dev.mamkin.lazypizza.order.presentation.utils.formatPrice
 
 
 sealed interface CartState {
@@ -19,5 +22,13 @@ data class RecommendedItemUi(
     val title: String,
     val price: String,
     val image: String,
-    val type: ProductType
+    val type: ProductType,
+)
+
+fun MenuItem.toRecommendedItemUi() = RecommendedItemUi(
+    id = id,
+    title = title,
+    price = formatPrice(price),
+    image = image,
+    type = toProductType()
 )

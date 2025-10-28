@@ -19,6 +19,8 @@ class CartViewModel(
 
     private var hasLoadedInitialData = false
 
+    private var recommendedItems: List<RecommendedItemUi> = listOf()
+
     private val _state = MutableStateFlow<CartState>(CartState.Loading)
     val state = _state
         .onStart {
@@ -39,6 +41,7 @@ class CartViewModel(
             val menu = menuRepository.getMenu()
 
             cartRepository.cart.collectLatest { items ->
+                val idsPresentedInCart = items.map { it.productId }
                 when {
                     items.isEmpty() -> {
                         _state.value = CartState.Empty
@@ -47,7 +50,8 @@ class CartViewModel(
                     else -> {
                         _state.value = CartState.Content(
                             items = items.map { it.toProductCardUi(menu) },
-                            recommended = listOf(),
+                            recommended = menu.drinks.filterNot { idsPresentedInCart.contains(it.id) }
+                                .map { it.toRecommendedItemUi() },
                             buttonText = "Checkout"
                         )
                     }
