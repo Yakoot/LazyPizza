@@ -7,9 +7,11 @@ import dev.mamkin.lazypizza.order.domain.MenuRepository
 import dev.mamkin.lazypizza.order.domain.models.MenuItem
 import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
 import dev.mamkin.lazypizza.order.domain.models.cart.ToppingItem
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,6 +27,8 @@ class ProductDetailsViewModel(
     private var allToppings: List<MenuItem.Topping> = emptyList()
     private var basePizzaPrice: Double = 0.0
 
+    private val _event = Channel<ProductDetailsScreenEvent>()
+    val event = _event.receiveAsFlow()
 
     private val _state = MutableStateFlow<ProductDetailsState>(ProductDetailsState.Loading)
     val state = _state
@@ -136,6 +140,7 @@ class ProductDetailsViewModel(
                     CartItem.Pizza(
                         productId = pizza,
                         quantity = 1,
+                        price = calculateTotalPrice(),
                         toppings = selectedToppings.map {
                             ToppingItem(
                                 productId = it.key,
@@ -144,6 +149,7 @@ class ProductDetailsViewModel(
                         }
                     )
                 )
+                _event.send(ProductDetailsScreenEvent.NavigateBack)
             }
         }
     }

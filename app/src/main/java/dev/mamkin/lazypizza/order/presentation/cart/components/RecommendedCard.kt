@@ -90,7 +90,7 @@ fun RecommendedCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = data.price,
+                        text = data.priceText,
                         style = AppTheme.typography.title1SemiBold,
                         color = AppTheme.colors.textPrimary
                     )
@@ -113,10 +113,11 @@ private fun Preview() {
         mutableStateOf(
             RecommendedItemUi(
                 title = "Four cheese",
-                price = "$12.99",
+                priceText = "$12.99",
                 image = "",
                 type = ProductType.PIZZA,
-                id = ""
+                id = "",
+                price = 12.99
             )
         )
     }

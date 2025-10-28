@@ -1,11 +1,9 @@
 package dev.mamkin.lazypizza.app.navigation
 
-import android.R.attr.text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -31,6 +29,7 @@ import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.presentation.cart.CartRoot
+import dev.mamkin.lazypizza.order.presentation.history.HistoryRoot
 import dev.mamkin.lazypizza.order.presentation.home.HomeRoot
 import dev.mamkin.lazypizza.order.presentation.productDetails.ProductDetailsRoot
 import kotlinx.serialization.Serializable
@@ -74,7 +73,7 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                                 Badge(
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
-                                        .offset(x = 6.dp, y = (-6).dp)
+                                        .offset(x = 12.dp, y = (-12).dp)
                                     ,
                                     containerColor = AppTheme.colors.primary,
                                     contentColor = AppTheme.colors.textOnPrimary
@@ -92,9 +91,6 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                         backStack.apply {
                             clear()
                             add(route as NavKey)
-                            backStack.forEach {
-                                println(it)
-                            }
                         }
                     },
                     colors = itemColors
@@ -126,10 +122,21 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                     }
 
                     is Cart -> NavEntry(key) {
-                        CartRoot()
+                        CartRoot(
+                            backToMenu = {
+                                backStack.apply {
+                                    clear()
+                                    add(Menu)
+                                }
+                            }
+                        )
                     }
 
-                    is History -> NavEntry(key) {}
+                    is History -> NavEntry(key) {
+                        HistoryRoot(
+
+                        )
+                    }
 
                     else -> throw IllegalArgumentException("Unknown key: $key")
                 }

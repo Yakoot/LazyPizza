@@ -4,4 +4,6 @@ sealed interface CartAction {
     data class DeleteClick(val id: String) : CartAction
     data class PlusClick(val id: String) : CartAction
     data class MinusClick(val id: String) : CartAction
+    data class AddRecommendedClick(val itemUi: RecommendedItemUi) : CartAction
+    data object BackToMenuClick : CartAction
 }

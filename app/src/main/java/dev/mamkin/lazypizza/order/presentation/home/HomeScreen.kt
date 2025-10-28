@@ -21,10 +21,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,6 +54,7 @@ import dev.mamkin.lazypizza.order.domain.models.ProductType
 import dev.mamkin.lazypizza.order.presentation.components.NavigationChips
 import dev.mamkin.lazypizza.order.presentation.components.ProductCard
 import dev.mamkin.lazypizza.order.presentation.components.SearchTextField
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.UUID
@@ -61,6 +65,19 @@ fun HomeRoot(
     navigateToDetails: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.event.collectLatest { event ->
+            when (event) {
+                is HomeScreenEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message
+                    )
+                }
+            }
+        }
+    }
 
     val onAction = remember {
         { action: HomeAction ->
@@ -73,7 +90,8 @@ fun HomeRoot(
 
     HomeScreen(
         state = state,
-        onAction = onAction
+        onAction = onAction,
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -82,11 +100,13 @@ fun HomeRoot(
 fun HomeScreen(
     state: HomeState,
     onAction: (HomeAction) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isWideScreen = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
     val columnsCount = if (isWideScreen) 2 else 1
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -207,6 +227,8 @@ fun HomeScreen(
                                     ProductCard(
                                         modifier = Modifier.fillMaxWidth(),
                                         data = it,
+                                        imageSize = 108.dp,
+                                        imageSectionWidth = 120.dp,
                                         onClick = {
                                             onAction(HomeAction.PizzaClick(it.id))
                                         }
@@ -216,6 +238,8 @@ fun HomeScreen(
                                 else -> {
                                     ProductCard(
                                         data = it,
+                                        imageSize = 108.dp,
+                                        imageSectionWidth = 120.dp,
                                         onPlusClick = {
                                             onAction(HomeAction.PlusClick(it.id))
                                         },
@@ -223,7 +247,7 @@ fun HomeScreen(
                                             onAction(HomeAction.MinusClick(it.id))
                                         },
                                         onAddClick = {
-                                            onAction(HomeAction.AddClick(it.id, it.type))
+                                            onAction(HomeAction.AddClick(it))
                                         },
                                         onDeleteClick = {
                                             onAction(HomeAction.DeleteClick(it.id))

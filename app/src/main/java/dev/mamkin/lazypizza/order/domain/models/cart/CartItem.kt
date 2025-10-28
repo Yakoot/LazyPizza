@@ -13,11 +13,14 @@ sealed interface CartItem {
     val productId: String
     val quantity: Int
 
+    val price: Double
+
     @Serializable
     data class Pizza(
         override val id: String = Uuid.random().toString(),
         override val productId: String,
         override val quantity: Int,
+        override val price: Double,
         val toppings: List<ToppingItem>
     ) : CartItem
 
@@ -26,6 +29,7 @@ sealed interface CartItem {
         override val id: String = Uuid.random().toString(),
         override val productId: String,
         override val quantity: Int,
+        override val price: Double,
         val productType: ProductType
     ) : CartItem
 }
@@ -35,9 +39,4 @@ data class ToppingItem(
     val id: String = Uuid.random().toString(),
     val productId: String,
     val quantity: Int
-)
-
-@Serializable
-data class Cart(
-    val items: List<CartItem>
 )

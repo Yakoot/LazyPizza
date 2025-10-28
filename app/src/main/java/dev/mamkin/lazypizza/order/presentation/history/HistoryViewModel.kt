@@ -11,7 +11,7 @@ class HistoryViewModel : ViewModel() {
 
     private var hasLoadedInitialData = false
 
-    private val _state = MutableStateFlow(HistoryState())
+    private val _state = MutableStateFlow(HistoryState.NotLoggedIn)
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
@@ -22,7 +22,7 @@ class HistoryViewModel : ViewModel() {
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = HistoryState()
+            initialValue = HistoryState.NotLoggedIn
         )
 
     fun onAction(action: HistoryAction) {

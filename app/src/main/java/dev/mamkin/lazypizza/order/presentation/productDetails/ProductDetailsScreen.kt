@@ -47,7 +47,7 @@ import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import coil.compose.AsyncImage
 import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.buttons.FilledButton
@@ -55,6 +55,7 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 import dev.mamkin.lazypizza.order.domain.models.MenuItem
 import dev.mamkin.lazypizza.order.presentation.components.ToppingCard
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -65,10 +66,12 @@ fun ProductDetailsRoot(
     viewModel: ProductDetailsViewModel = koinViewModel(key = pizza) { parametersOf(pizza) }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(
-        Unit
-    ) {
-        println("!!!!! ${viewModel.toString()}")
+    LaunchedEffect(key1 = Unit) {
+        viewModel.event.collectLatest {
+            when (it) {
+                ProductDetailsScreenEvent.NavigateBack -> navigateBack()
+            }
+        }
     }
 
     ProductDetailsScreen(
@@ -89,7 +92,7 @@ fun ProductDetailsScreen(
     onAction: (ProductDetailsAction) -> Unit,
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val isWideScreen = windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
+    val isWideScreen = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
     Scaffold(
         topBar = {
             TopAppBar(

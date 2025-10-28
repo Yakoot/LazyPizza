@@ -37,7 +37,6 @@ fun NotSignedIn(
         )
         Spacer(modifier = Modifier.height(20.dp))
         FilledButton(
-            modifier = Modifier,
             text = stringResource(R.string.history_not_signed_in_button),
             onClick = onClick,
         )

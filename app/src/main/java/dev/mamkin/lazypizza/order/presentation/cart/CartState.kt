@@ -20,7 +20,8 @@ sealed interface CartState {
 data class RecommendedItemUi(
     val id: String,
     val title: String,
-    val price: String,
+    val priceText: String,
+    val price: Double,
     val image: String,
     val type: ProductType,
 )
@@ -28,7 +29,8 @@ data class RecommendedItemUi(
 fun MenuItem.toRecommendedItemUi() = RecommendedItemUi(
     id = id,
     title = title,
-    price = formatPrice(price),
+    priceText = formatPrice(price),
+    price = price,
     image = image,
     type = toProductType()
 )

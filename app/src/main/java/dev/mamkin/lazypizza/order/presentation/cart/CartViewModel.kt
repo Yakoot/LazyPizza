@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
+import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
 import dev.mamkin.lazypizza.order.presentation.models.toProductCardUi
+import dev.mamkin.lazypizza.order.presentation.utils.formatPrice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
@@ -19,7 +21,7 @@ class CartViewModel(
 
     private var hasLoadedInitialData = false
 
-    private var recommendedItems: List<RecommendedItemUi> = listOf()
+    private var allRecommendedItems: List<RecommendedItemUi> = listOf()
 
     private val _state = MutableStateFlow<CartState>(CartState.Loading)
     val state = _state
@@ -39,6 +41,9 @@ class CartViewModel(
     private fun loadData() {
         viewModelScope.launch {
             val menu = menuRepository.getMenu()
+            allRecommendedItems = (menu.drinks + menu.sauces)
+                .map { it.toRecommendedItemUi() }
+                .shuffled()
 
             cartRepository.cart.collectLatest { items ->
                 val idsPresentedInCart = items.map { it.productId }
@@ -48,11 +53,15 @@ class CartViewModel(
                     }
 
                     else -> {
+                        val totalPrice = items.sumOf { item -> item.price * item.quantity }
                         _state.value = CartState.Content(
                             items = items.map { it.toProductCardUi(menu) },
-                            recommended = menu.drinks.filterNot { idsPresentedInCart.contains(it.id) }
-                                .map { it.toRecommendedItemUi() },
-                            buttonText = "Checkout"
+                            recommended = allRecommendedItems.filterNot {
+                                idsPresentedInCart.contains(
+                                    it.id
+                                )
+                            },
+                            buttonText = "Proceed to Checkout (${formatPrice(totalPrice)})"
                         )
                     }
                 }
@@ -65,6 +74,8 @@ class CartViewModel(
             is CartAction.DeleteClick -> onDeleteClick(action.id)
             is CartAction.MinusClick -> onMinusClick(action.id)
             is CartAction.PlusClick -> onPlusClick(action.id)
+            is CartAction.AddRecommendedClick -> onAddRecommendedClick(action.itemUi)
+            else -> Unit
         }
     }
 
@@ -86,4 +97,17 @@ class CartViewModel(
         }
     }
 
+    private fun onAddRecommendedClick(itemUi: RecommendedItemUi) {
+        viewModelScope.launch {
+            cartRepository.addItem(
+                CartItem.Other(
+                    productId = itemUi.id,
+                    quantity = 1,
+                    productType = itemUi.type,
+                    price = itemUi.price
+                )
+            )
+        }
+
+    }
 }

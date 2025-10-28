@@ -1,6 +1,5 @@
 package dev.mamkin.lazypizza.order.presentation.history
 
-data class HistoryState(
-    val paramOne: String = "default",
-    val paramTwo: List<String> = emptyList(),
-)
+sealed interface HistoryState {
+    data object NotLoggedIn : HistoryState
+}

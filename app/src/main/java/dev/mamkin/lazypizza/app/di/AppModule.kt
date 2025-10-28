@@ -12,6 +12,7 @@ import dev.mamkin.lazypizza.order.data.MenuCache
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
 import dev.mamkin.lazypizza.order.presentation.cart.CartViewModel
+import dev.mamkin.lazypizza.order.presentation.history.HistoryViewModel
 import dev.mamkin.lazypizza.order.presentation.home.HomeViewModel
 import dev.mamkin.lazypizza.order.presentation.productDetails.ProductDetailsViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +52,7 @@ val appModule = module {
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::CartViewModel)
+    viewModelOf(::HistoryViewModel)
 
     viewModel { parameters ->
         ProductDetailsViewModel(

@@ -6,13 +6,16 @@ import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
 import dev.mamkin.lazypizza.order.domain.models.ProductType
 import dev.mamkin.lazypizza.order.domain.models.cart.CartItem
+import dev.mamkin.lazypizza.order.presentation.models.ProductCardUi
 import dev.mamkin.lazypizza.order.presentation.utils.formatPrice
 import dev.mamkin.lazypizza.order.presentation.utils.getPriceCalculation
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,6 +28,9 @@ class HomeViewModel(
     private var initialMenuUi = emptyList<ProductSectionUi>()
 
     private val _searchQuery = MutableStateFlow("")
+
+    private val _event = Channel<HomeScreenEvent>()
+    val event = _event.receiveAsFlow()
 
     private val _state = MutableStateFlow(
         HomeState(
@@ -112,7 +118,7 @@ class HomeViewModel(
     fun onAction(action: HomeAction) {
         when (action) {
             is HomeAction.SearchInput -> onSearchInput(action.value)
-            is HomeAction.AddClick -> onAddClick(action.id, action.type)
+            is HomeAction.AddClick -> onAddClick(action.item)
             is HomeAction.DeleteClick -> onDeleteClick(action.id)
             is HomeAction.MinusClick -> onMinusClick(action.id)
             is HomeAction.PlusClick -> onPlusClick(action.id)
@@ -120,14 +126,19 @@ class HomeViewModel(
         }
     }
 
-    private fun onAddClick(id: String, type: ProductType) {
+    private fun onAddClick(item: ProductCardUi) {
         viewModelScope.launch {
             cartRepository.addItem(
                 CartItem.Other(
-                    productId = id,
+                    productId = item.id,
                     quantity = 1,
-                    productType = type
+                    productType = item.type,
+                    price = item.price
                 )
+            )
+            _event.send(
+                HomeScreenEvent
+                    .ShowSnackbar("Successfully added to cart")
             )
         }
     }
