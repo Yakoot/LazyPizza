@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -135,50 +135,33 @@ fun CartScreen(
                                             }
                                         )
                                     }
-                                    if (state.recommended.isNotEmpty()) {
-                                        item {
-                                            Spacer(modifier = Modifier.height(12.dp))
-                                            Text(
-                                                text = "Recommended to add to your order".toUpperCase(
-                                                    Locale.current
-                                                ),
-                                                style = AppTheme.typography.label2SemiBold,
-                                                color = AppTheme.colors.textSecondary
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            LazyRow(
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                items(state.recommended) {
-                                                    RecommendedCard(
-                                                        data = it,
-                                                        onClickAdd = {
-                                                            onAction(
-                                                                CartAction.AddRecommendedClick(
-                                                                    it
-                                                                )
-                                                            )
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
+                                }
+                            },
+                            rightContent = {
+                                Column() {
+                                    RecommendedBlock(
+                                        recommendedItems = state.recommended,
+                                        onAction = onAction
+                                    )
+                                    Box {
+                                        ButtonView(
+                                            text = state.buttonText,
+                                            onClick = {}
+                                        )
                                     }
-
                                 }
                             }
-                        ) { }
+                        )
                     } else {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
                                 bottom = 100.dp
                             )
                         ) {
                             items(state.items) {
                                 ProductCard(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
                                     data = it,
                                     onDeleteClick = {
                                         onAction(CartAction.DeleteClick(it.id))
@@ -193,25 +176,10 @@ fun CartScreen(
                             }
                             if (state.recommended.isNotEmpty()) {
                                 item {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "Recommended to add to your order".toUpperCase(Locale.current),
-                                        style = AppTheme.typography.label2SemiBold,
-                                        color = AppTheme.colors.textSecondary
+                                    RecommendedBlock(
+                                        recommendedItems = state.recommended,
+                                        onAction = onAction
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        items(state.recommended) {
-                                            RecommendedCard(
-                                                data = it,
-                                                onClickAdd = {
-                                                    onAction(CartAction.AddRecommendedClick(it))
-                                                }
-                                            )
-                                        }
-                                    }
                                 }
                             }
 
@@ -223,6 +191,43 @@ fun CartScreen(
                     }
 
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun RecommendedBlock(
+    recommendedItems: List<RecommendedItemUi>,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
+    onAction: (CartAction) -> Unit,
+) {
+    if (recommendedItems.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            modifier = Modifier.padding(contentPadding),
+            text = "Recommended to add to your order".toUpperCase(
+                Locale.current
+            ),
+            style = AppTheme.typography.label2SemiBold,
+            color = AppTheme.colors.textSecondary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = contentPadding
+        ) {
+            items(recommendedItems) {
+                RecommendedCard(
+                    data = it,
+                    onClickAdd = {
+                        onAction(
+                            CartAction.AddRecommendedClick(
+                                it
+                            )
+                        )
+                    }
+                )
             }
         }
     }
@@ -275,7 +280,9 @@ fun HorizontalLayout(
     rightContent: @Composable BoxScope.() -> Unit,
 ) {
     Row(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
     ) {
         Box(modifier = Modifier.weight(1f)) {
             leftContent()
@@ -283,7 +290,7 @@ fun HorizontalLayout(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight()
+                .wrapContentHeight()
                 .dropShadow(
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                     shadow = Shadow(4.dp, color = Color(0x0A03131F))
