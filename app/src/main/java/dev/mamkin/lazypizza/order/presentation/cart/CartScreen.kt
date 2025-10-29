@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -121,24 +122,14 @@ fun CartScreen(
                                         bottom = 100.dp
                                     )
                                 ) {
-                                    items(state.items) {
-                                        ProductCard(
-                                            data = it,
-                                            onDeleteClick = {
-                                                onAction(CartAction.DeleteClick(it.id))
-                                            },
-                                            onPlusClick = {
-                                                onAction(CartAction.PlusClick(it.id))
-                                            },
-                                            onMinusClick = {
-                                                onAction(CartAction.MinusClick(it.id))
-                                            }
-                                        )
-                                    }
+                                    cartItemsList(
+                                        items = state.items,
+                                        onAction = onAction
+                                    )
                                 }
                             },
                             rightContent = {
-                                Column() {
+                                Column {
                                     RecommendedBlock(
                                         recommendedItems = state.recommended,
                                         onAction = onAction
@@ -159,21 +150,11 @@ fun CartScreen(
                                 bottom = 100.dp
                             )
                         ) {
-                            items(state.items) {
-                                ProductCard(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    data = it,
-                                    onDeleteClick = {
-                                        onAction(CartAction.DeleteClick(it.id))
-                                    },
-                                    onPlusClick = {
-                                        onAction(CartAction.PlusClick(it.id))
-                                    },
-                                    onMinusClick = {
-                                        onAction(CartAction.MinusClick(it.id))
-                                    }
-                                )
-                            }
+                            cartItemsList(
+                                items = state.items,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                onAction = onAction
+                            )
                             if (state.recommended.isNotEmpty()) {
                                 item {
                                     RecommendedBlock(
@@ -182,17 +163,37 @@ fun CartScreen(
                                     )
                                 }
                             }
-
                         }
                         ButtonView(
                             text = state.buttonText,
                             onClick = {}
                         )
                     }
-
                 }
             }
         }
+    }
+}
+
+fun LazyListScope.cartItemsList(
+    items: List<ProductCardUi>,
+    modifier: Modifier = Modifier,
+    onAction: (CartAction) -> Unit,
+) {
+    items(items) { item ->
+        ProductCard(
+            modifier = modifier,
+            data = item,
+            onDeleteClick = {
+                onAction(CartAction.DeleteClick(item.id))
+            },
+            onPlusClick = {
+                onAction(CartAction.PlusClick(item.id))
+            },
+            onMinusClick = {
+                onAction(CartAction.MinusClick(item.id))
+            }
+        )
     }
 }
 
@@ -217,58 +218,14 @@ fun RecommendedBlock(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = contentPadding
         ) {
-            items(recommendedItems) {
+            items(recommendedItems) { item ->
                 RecommendedCard(
-                    data = it,
+                    data = item,
                     onClickAdd = {
-                        onAction(
-                            CartAction.AddRecommendedClick(
-                                it
-                            )
-                        )
+                        onAction(CartAction.AddRecommendedClick(item))
                     }
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun VerticalLayout(
-    modifier: Modifier = Modifier,
-    topContent: @Composable () -> Unit,
-    bottomContent: @Composable BoxScope.() -> Unit,
-) {
-    Column(
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp)
-                .background(AppTheme.colors.surfaceHigher)
-                .clip(
-                    RoundedCornerShape(bottomEnd = 16.dp)
-                )
-                .background(AppTheme.colors.bg)
-        ) {
-            topContent()
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .background(AppTheme.colors.bg)
-                .dropShadow(
-                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                    shadow = Shadow(4.dp, color = Color(0x0A03131F))
-                )
-                .clip(
-                    RoundedCornerShape(topStart = 16.dp)
-                )
-                .background(AppTheme.colors.surfaceHigher)
-        ) {
-            bottomContent()
         }
     }
 }
