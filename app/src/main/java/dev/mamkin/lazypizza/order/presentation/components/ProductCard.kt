@@ -132,6 +132,7 @@ fun ProductCard(
                         CountSelector(
                             modifier = Modifier.width(96.dp),
                             count = data.count,
+                            minusEnabled = data.count > 1,
                             onIncrement = onPlusClick,
                             onDecrement = onMinusClick
                         )
@@ -201,6 +202,3 @@ private fun Preview() {
         )
     }
 }
-
-
-

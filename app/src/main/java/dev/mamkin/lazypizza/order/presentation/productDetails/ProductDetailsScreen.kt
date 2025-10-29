@@ -31,6 +31,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -66,11 +67,18 @@ fun ProductDetailsRoot(
     viewModel: ProductDetailsViewModel = koinViewModel(key = pizza) { parametersOf(pizza) }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(key1 = Unit) {
         viewModel.event.collectLatest {
             when (it) {
                 ProductDetailsScreenEvent.NavigateBack -> navigateBack()
             }
+        }
+    }
+
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            viewModel.reset()
         }
     }
 

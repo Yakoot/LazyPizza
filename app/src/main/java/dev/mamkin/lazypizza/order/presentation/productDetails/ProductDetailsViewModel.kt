@@ -47,6 +47,7 @@ class ProductDetailsViewModel(
 
     private fun loadData() {
         viewModelScope.launch {
+            selectedToppings = emptyMap()
             val menu = menuRepository.getMenu()
             val pizzaData = menu.pizzas.find { it.id == pizza }
             allToppings = menu.toppings
@@ -150,8 +151,16 @@ class ProductDetailsViewModel(
                     )
                 )
                 _event.send(ProductDetailsScreenEvent.NavigateBack)
+                reset()
             }
         }
+    }
+
+    fun reset() {
+        selectedToppings = emptyMap()
+        hasLoadedInitialData = false
+        _state.value = ProductDetailsState.Loading
+        loadData()
     }
 
 }

@@ -1,6 +1,7 @@
 package dev.mamkin.lazypizza.order.presentation.history
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -40,6 +41,7 @@ fun HistoryScreen(
     onAction: (HistoryAction) -> Unit,
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
