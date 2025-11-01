@@ -1,41 +1,36 @@
-package dev.mamkin.lazypizza.order.presentation.components
+package dev.mamkin.lazypizza.auth.presentation.signin.components
 
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.core.presentation.designsystem.text_fields.AppTextField
+import dev.mamkin.lazypizza.core.presentation.designsystem.text_fields.AppTextFieldDefaults
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 
 @Composable
-fun SearchTextField(
+fun SignInTextField(
     modifier: Modifier = Modifier,
     value: String,
-    onValueChange: (String) -> Unit
+    placeholder: String,
+    onValueChange: (String) -> Unit,
 ) {
     AppTextField(
-        leadingIcon = {
-            Icon(
-                painter = painterResource(R.drawable.search_refraction),
-                contentDescription = null,
-                tint = AppTheme.colors.primary
-            )
-        },
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = stringResource(R.string.search_placeholder),
-                style = AppTheme.typography.body1Regular,
+                text = placeholder,
+                style = AppTheme.typography.body2Regular,
                 color = AppTheme.colors.textSecondary
             )
         },
+        colors = AppTextFieldDefaults.colors().copy(
+            focusedContainerColor = AppTheme.colors.surfaceHighest,
+            unfocusedContainerColor = AppTheme.colors.surfaceHighest
+        )
     )
 }
 
@@ -43,9 +38,10 @@ fun SearchTextField(
 @Composable
 private fun Preview() {
     LazyPizzaTheme {
-        SearchTextField(
+        SignInTextField(
             value = "",
-            onValueChange = {}
+            onValueChange = {},
+            placeholder = "+1 000 000 0000"
         )
     }
 }

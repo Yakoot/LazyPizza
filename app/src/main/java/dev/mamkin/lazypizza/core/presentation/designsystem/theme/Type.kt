@@ -26,6 +26,7 @@ data class ReplacementTypography(
     val label2SemiBold: TextStyle,
     val body1Regular: TextStyle,
     val body1Medium: TextStyle,
+    val body2Regular: TextStyle,
     val body3Regular: TextStyle,
     val body3Medium: TextStyle,
     val body3Bold: TextStyle,
@@ -42,6 +43,7 @@ val LocalReplacementTypography = staticCompositionLocalOf {
         label2SemiBold = TextStyle.Default,
         body1Regular = TextStyle.Default,
         body1Medium = TextStyle.Default,
+        body2Regular = TextStyle.Default,
         body3Regular = TextStyle.Default,
         body3Medium = TextStyle.Default,
         body3Bold = TextStyle.Default,
@@ -96,6 +98,12 @@ val replacementTypography = ReplacementTypography(
         fontFamily = InstrumentSans,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
+        lineHeight = 22.sp,
+    ),
+    body2Regular = TextStyle(
+        fontFamily = InstrumentSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
         lineHeight = 22.sp,
     ),
     body3Regular = TextStyle(
