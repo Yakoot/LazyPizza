@@ -1,19 +1,23 @@
 package dev.mamkin.lazypizza.app.di
 
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
 import dev.mamkin.lazypizza.app.LazyPizzaApp
-import dev.mamkin.lazypizza.home.data.FirebaseMenuRepository
-import dev.mamkin.lazypizza.home.domain.MenuRepository
-import dev.mamkin.lazypizza.home.domain.models.Pizza
-import dev.mamkin.lazypizza.home.presentation.home.HomeViewModel
-import dev.mamkin.lazypizza.home.presentation.productDetails.ProductDetailsViewModel
+import dev.mamkin.lazypizza.order.data.FirebaseMenuRepository
+import dev.mamkin.lazypizza.order.data.LocalCartRepository
+import dev.mamkin.lazypizza.order.data.MenuCache
+import dev.mamkin.lazypizza.order.domain.CartRepository
+import dev.mamkin.lazypizza.order.domain.MenuRepository
+import dev.mamkin.lazypizza.order.presentation.cart.CartViewModel
+import dev.mamkin.lazypizza.order.presentation.history.HistoryViewModel
+import dev.mamkin.lazypizza.order.presentation.home.HomeViewModel
+import dev.mamkin.lazypizza.order.presentation.productDetails.ProductDetailsViewModel
 import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidApplication
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -31,13 +35,30 @@ val appModule = module {
         Firebase.storage
     }
 
+    single<CartRepository> {
+        LocalCartRepository(
+            context = androidContext(),
+        )
+    }
+
+    single { MenuCache() }
+
     factory<MenuRepository> {
         FirebaseMenuRepository(
-            firestore = get()
+            firestore = get(),
+            cache = get()
         )
     }
 
     viewModelOf(::HomeViewModel)
+    viewModelOf(::CartViewModel)
+    viewModelOf(::HistoryViewModel)
 
-    viewModel { parameters -> ProductDetailsViewModel(pizza = parameters.get(), menuRepository = get()) }
+    viewModel { parameters ->
+        ProductDetailsViewModel(
+            pizza = parameters.get(),
+            menuRepository = get(),
+            cartRepository = get()
+        )
+    }
 }

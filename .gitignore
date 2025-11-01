@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+/replay*.log
+/hs_err*.log
+/.idea/deviceManager.xml

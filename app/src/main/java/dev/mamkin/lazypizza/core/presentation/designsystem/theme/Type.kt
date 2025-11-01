@@ -1,6 +1,5 @@
 package dev.mamkin.lazypizza.core.presentation.designsystem.theme
 
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
@@ -19,9 +18,11 @@ val InstrumentSans = FontFamily(
 
 @Immutable
 data class ReplacementTypography(
+    val title1Medium: TextStyle,
     val title1SemiBold: TextStyle,
     val title2: TextStyle,
     val title3: TextStyle,
+    val title4: TextStyle,
     val label2SemiBold: TextStyle,
     val body1Regular: TextStyle,
     val body1Medium: TextStyle,
@@ -33,9 +34,11 @@ data class ReplacementTypography(
 
 val LocalReplacementTypography = staticCompositionLocalOf {
     ReplacementTypography(
+        title1Medium = TextStyle.Default,
         title1SemiBold = TextStyle.Default,
         title2 = TextStyle.Default,
         title3 = TextStyle.Default,
+        title4 = TextStyle.Default,
         label2SemiBold = TextStyle.Default,
         body1Regular = TextStyle.Default,
         body1Medium = TextStyle.Default,
@@ -47,6 +50,12 @@ val LocalReplacementTypography = staticCompositionLocalOf {
 }
 
 val replacementTypography = ReplacementTypography(
+    title1Medium = TextStyle(
+        fontFamily = InstrumentSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 24.sp,
+        lineHeight = 28.sp,
+    ),
     title1SemiBold = TextStyle(
         fontFamily = InstrumentSans,
         fontWeight = FontWeight.SemiBold,
@@ -64,6 +73,12 @@ val replacementTypography = ReplacementTypography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp,
         lineHeight = 22.sp,
+    ),
+    title4 = TextStyle(
+        fontFamily = InstrumentSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
     ),
     label2SemiBold = TextStyle(
         fontFamily = InstrumentSans,

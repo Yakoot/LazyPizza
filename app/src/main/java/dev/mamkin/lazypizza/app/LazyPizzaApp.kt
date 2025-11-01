@@ -1,6 +1,10 @@
 package dev.mamkin.lazypizza.app
 
 import android.app.Application
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -11,7 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.KoinApplication
 import org.koin.core.context.GlobalContext.startKoin
 
 class LazyPizzaApp : Application(), ImageLoaderFactory {
@@ -44,3 +47,5 @@ class LazyPizzaApp : Application(), ImageLoaderFactory {
             .build()
     }
 }
+
+val Context.cartDataStore: DataStore<Preferences> by preferencesDataStore(name = "cart")
