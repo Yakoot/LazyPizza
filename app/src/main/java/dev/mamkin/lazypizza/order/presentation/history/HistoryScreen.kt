@@ -24,13 +24,23 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HistoryRoot(
-    viewModel: HistoryViewModel = koinViewModel()
+    viewModel: HistoryViewModel = koinViewModel(),
+    goToSignIn: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     HistoryScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = {
+            when (it) {
+                HistoryAction.GoToSignIn -> {
+                    goToSignIn()
+                }
+
+                else -> Unit
+            }
+            viewModel.onAction(it)
+        }
     )
 }
 
@@ -64,7 +74,10 @@ fun HistoryScreen(
                 HistoryState.NotLoggedIn -> {
                     NotSignedIn(
                         modifier = Modifier.padding(top = 120.dp, start = 16.dp, end = 16.dp),
-                    ) { }
+                        onClick = {
+                            onAction(HistoryAction.GoToSignIn)
+                        }
+                    )
                 }
             }
         }

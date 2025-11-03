@@ -1,5 +1,10 @@
 package dev.mamkin.lazypizza.app.navigation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +44,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import dev.mamkin.lazypizza.R
+import dev.mamkin.lazypizza.auth.presentation.signin.SignInRoot
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.presentation.cart.CartRoot
@@ -79,7 +85,11 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
 
     Scaffold(
         bottomBar = {
-            if (!isWideScreen) {
+            AnimatedVisibility(
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
+                visible = !isWideScreen && backStack.lastOrNull() is TopLevelRoute
+            ) {
                 Row(
                     modifier = Modifier
                         .shadow(elevation = 16.dp)
@@ -122,7 +132,7 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
         },
         contentWindowInsets = WindowInsets(0)
     ) { paddingValues ->
-        if (isWideScreen) {
+        if (isWideScreen && backStack.lastOrNull() is TopLevelRoute) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -162,6 +172,7 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                         }
                     }
                 }
+
                 AppNavDisplay(
                     modifier = modifier
                         .weight(1f)
@@ -221,7 +232,25 @@ private fun AppNavDisplay(
                 }
 
                 is History -> NavEntry(key) {
-                    HistoryRoot()
+                    HistoryRoot(
+                        goToSignIn = {
+                            backStack.apply {
+                                clear()
+                                add(SignIn)
+                            }
+                        }
+                    )
+                }
+
+                is SignIn -> NavEntry(key) {
+                    SignInRoot(
+                        backToHome = {
+                            backStack.apply {
+                                clear()
+                                add(Menu)
+                            }
+                        }
+                    )
                 }
 
                 else -> throw IllegalArgumentException("Unknown key: $key")
@@ -284,5 +313,8 @@ data object History : NavKey, TopLevelRoute {
 data class ProductDetails(
     val pizza: String
 ) : NavKey
+
+@Serializable
+data object SignIn : NavKey
 
 private val TOP_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Menu, Cart, History)

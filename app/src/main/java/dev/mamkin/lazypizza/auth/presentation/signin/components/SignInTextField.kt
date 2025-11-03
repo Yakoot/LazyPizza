@@ -1,8 +1,10 @@
 package dev.mamkin.lazypizza.auth.presentation.signin.components
 
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import dev.mamkin.lazypizza.core.presentation.designsystem.text_fields.AppTextField
 import dev.mamkin.lazypizza.core.presentation.designsystem.text_fields.AppTextFieldDefaults
@@ -27,6 +29,9 @@ fun SignInTextField(
                 color = AppTheme.colors.textSecondary
             )
         },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Phone
+        ),
         colors = AppTextFieldDefaults.colors().copy(
             focusedContainerColor = AppTheme.colors.surfaceHighest,
             unfocusedContainerColor = AppTheme.colors.surfaceHighest

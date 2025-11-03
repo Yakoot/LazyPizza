@@ -1,6 +1,7 @@
 package dev.mamkin.lazypizza.core.presentation.designsystem.text_fields
 
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
@@ -8,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
@@ -20,6 +23,8 @@ fun AppTextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     colors: TextFieldColors = AppTextFieldDefaults.colors(),
+    textStyle: TextStyle = AppTheme.typography.body2Regular,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
     OutlinedTextField(
         leadingIcon = leadingIcon,
@@ -28,7 +33,31 @@ fun AppTextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = placeholder,
-        colors = colors
+        keyboardOptions = keyboardOptions,
+        colors = colors,
+        textStyle = textStyle
+    )
+}
+
+@Composable
+fun AppTextField(
+    modifier: Modifier = Modifier,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    colors: TextFieldColors = AppTextFieldDefaults.colors(),
+    textStyle: TextStyle = AppTheme.typography.body2Regular,
+) {
+    OutlinedTextField(
+        leadingIcon = leadingIcon,
+        shape = CircleShape,
+        modifier = modifier,
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = placeholder,
+        colors = colors,
+        textStyle = textStyle
     )
 }
 
@@ -41,7 +70,9 @@ object AppTextFieldDefaults {
         errorBorderColor = Color.Transparent,
         focusedContainerColor = AppTheme.colors.surfaceHigher,
         unfocusedContainerColor = AppTheme.colors.surfaceHigher,
-        cursorColor = AppTheme.colors.primary
+        cursorColor = AppTheme.colors.primary,
+        focusedTextColor = AppTheme.colors.textPrimary,
+        unfocusedTextColor = AppTheme.colors.textPrimary,
     )
 }
 

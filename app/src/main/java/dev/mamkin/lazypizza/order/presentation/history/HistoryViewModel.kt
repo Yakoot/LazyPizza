@@ -27,7 +27,7 @@ class HistoryViewModel : ViewModel() {
 
     fun onAction(action: HistoryAction) {
         when (action) {
-            else -> TODO("Handle actions")
+            else -> Unit
         }
     }
 
