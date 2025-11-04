@@ -19,6 +19,7 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.KoinApplicationPreview
 
+const val DIGITS_COUNT = 6
 @Composable
 fun OtpView(
     modifier: Modifier = Modifier,
@@ -40,6 +41,7 @@ fun OtpView(
                         onAction(OtpAction.OnChangeFieldFocused(index))
                     }
                 },
+                isFocused = index == state.focusedIndex,
                 onNumberChanged = { newNumber ->
                     onAction(OtpAction.OnEnterNumber(newNumber, index))
                 },
@@ -52,9 +54,10 @@ fun OtpView(
 }
 
 data class OtpState(
-    val code: List<Int?> = (1..4).map { null },
+    val code: List<Int?> = (1..DIGITS_COUNT).map { null },
     val focusedIndex: Int? = null,
-    val isValid: Boolean? = null
+    val isValid: Boolean? = null,
+    val focusChangeId: Long = 0L
 )
 
 sealed interface OtpAction {
@@ -72,12 +75,12 @@ private fun Preview() {
             val viewModel: OtpViewModel = koinViewModel()
             val state by viewModel.state.collectAsStateWithLifecycle()
             val focusRequesters = remember {
-                (1..4).map { FocusRequester() }
+                (1..DIGITS_COUNT).map { FocusRequester() }
             }
             val focusManager = LocalFocusManager.current
             val keyboardManager = LocalSoftwareKeyboardController.current
 
-            LaunchedEffect(state.focusedIndex) {
+            LaunchedEffect(state.focusChangeId) {
                 state.focusedIndex?.let {
                     focusRequesters[it].requestFocus()
                 }
@@ -107,6 +110,5 @@ private fun Preview() {
                 focusRequesters = focusRequesters
             )
         }
-
     }
 }

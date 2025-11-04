@@ -18,9 +18,19 @@ class OtpViewModel : ViewModel() {
     }
 
     private fun onChangeFieldFocused(index: Int) {
+        val currentCode = state.value.code
+        val firstEmptyFieldIndex = currentCode.indexOfFirst { it == null }
+
+        val focusedIndex = if (currentCode[index] == null && firstEmptyFieldIndex != -1) {
+            firstEmptyFieldIndex
+        } else {
+            index
+        }
+
         _state.update {
             it.copy(
-                focusedIndex = index
+                focusedIndex = focusedIndex,
+                focusChangeId = it.focusChangeId + 1
             )
         }
     }
@@ -36,17 +46,22 @@ class OtpViewModel : ViewModel() {
 
         val wasNumberRemoved = number == null
 
+        val newFocusedIndex = if (wasNumberRemoved || state.value.code.getOrNull(index) != null) {
+            state.value.focusedIndex
+        } else {
+            getNextFocusedTextFieldIndex(
+                currentCode = state.value.code,
+                currentFocusedIndex = state.value.focusedIndex
+            )
+        }
+
+        val focusChanged = newFocusedIndex != state.value.focusedIndex
+
         _state.update {
             it.copy(
                 code = newCode,
-                focusedIndex = if (wasNumberRemoved || it.code.getOrNull(index) != null) {
-                    it.focusedIndex
-                } else {
-                    getNextFocusedTextFieldIndex(
-                        currentCode = it.code,
-                        currentFocusedIndex = it.focusedIndex
-                    )
-                },
+                focusedIndex = newFocusedIndex,
+                focusChangeId = if (focusChanged) it.focusChangeId + 1 else it.focusChangeId,
                 isValid = if (newCode.none { it == null }) {
                     newCode.joinToString("") == "1234"
                 } else {
@@ -67,7 +82,8 @@ class OtpViewModel : ViewModel() {
                         currentNumber
                     }
                 },
-                focusedIndex = previousIndex
+                focusedIndex = previousIndex,
+                focusChangeId = it.focusChangeId + 1
             )
         }
     }
@@ -84,7 +100,7 @@ class OtpViewModel : ViewModel() {
             return null
         }
 
-        if (currentFocusedIndex == 3) {
+        if (currentFocusedIndex == DIGITS_COUNT - 1) {
             return currentFocusedIndex
         }
 

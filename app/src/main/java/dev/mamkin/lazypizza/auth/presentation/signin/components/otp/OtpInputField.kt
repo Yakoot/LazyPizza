@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,12 +34,14 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 fun OtpInputField(
     modifier: Modifier = Modifier,
     number: Int?,
+    isFocused: Boolean = false,
     focusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
     onNumberChanged: (Int?) -> Unit,
     onKeyboardBack: () -> Unit,
 ) {
-    val text by remember(number) {
+
+    var text by remember(number) {
         mutableStateOf(
             TextFieldValue(
                 text = number?.toString().orEmpty(),
@@ -49,8 +52,15 @@ fun OtpInputField(
         )
     }
 
-    var isFocused by remember {
-        mutableStateOf(false)
+    LaunchedEffect(isFocused) {
+        val selection = if (isFocused && number != null) {
+            TextRange(start = 0, end = 1)
+        } else {
+            TextRange(0)
+        }
+        text = text.copy(
+            selection = selection
+        )
     }
 
     val textStyle = AppTheme.typography.body2Regular.copy(
@@ -62,7 +72,6 @@ fun OtpInputField(
             .height(48.dp)
             .focusRequester(focusRequester)
             .onFocusChanged {
-                isFocused = it.isFocused
                 onFocusChanged(it.isFocused)
             }
             .onKeyEvent {
@@ -106,13 +115,20 @@ fun OtpInputField(
 @Preview
 @Composable
 private fun Preview() {
+    var number by remember { mutableStateOf<Int?>(3) }
+    var isFocused by remember { mutableStateOf(false) }
     LazyPizzaTheme {
         OtpInputField(
             modifier = Modifier.width(60.dp),
-            number = null,
+            number = number,
+            isFocused = isFocused,
             focusRequester = remember { FocusRequester() },
-            onFocusChanged = {},
-            onNumberChanged = { },
+            onFocusChanged = {
+                isFocused = it
+            },
+            onNumberChanged = {
+                number = it
+            },
             onKeyboardBack = { },
         )
     }

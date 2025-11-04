@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.mamkin.lazypizza.auth.domain.AuthRepository
+import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.DIGITS_COUNT
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +21,8 @@ class SignInViewModel(
     private var hasLoadedInitialData = false
 
     private val phoneRegex = "^\\+[0-9]{10,13}$".toRegex()
+
+    private var verificationId: String? = null
 
     private val _event = Channel<SignInEvent>()
     val event = _event.receiveAsFlow()
@@ -45,10 +48,6 @@ class SignInViewModel(
                     _event.send(SignInEvent.BackToHome)
                 }
             }
-
-            is SignInAction.OnOtpChangeFieldFocused -> TODO()
-            is SignInAction.OnOtpEnterNumber -> TODO()
-            SignInAction.OnOtpKeyboardBack -> TODO()
             is SignInAction.OnPhoneNumberChanged -> {
                 _state.update {
                     it.copy(
@@ -73,8 +72,55 @@ class SignInViewModel(
         val phoneNumber = _state.value.phoneNumber
         viewModelScope.launch {
             authRepository.sendVerificationCode(phoneNumber, activity)
-                .onSuccess { println("!!!!! $it") }
+                .onSuccess {
+                    verificationId = it
+
+                    _state.update {
+                        it.copy(
+                            isCodeSent = true,
+                            isOtpFieldVisible = true
+                        )
+                    }
+                }
         }
+    }
+
+    fun getPreviousFocusedIndex(currentIndex: Int?): Int? {
+        return currentIndex?.minus(1)?.coerceAtLeast(0)
+    }
+
+    private fun getNextFocusedTextFieldIndex(
+        currentCode: List<Int?>,
+        currentFocusedIndex: Int?
+    ): Int? {
+        if (currentFocusedIndex == null) {
+            return null
+        }
+
+        if (currentFocusedIndex == DIGITS_COUNT - 1) {
+            return currentFocusedIndex
+        }
+
+        return getFirstEmptyFieldIndexAfterFocusedIndex(
+            code = currentCode,
+            currentFocusedIndex = currentFocusedIndex
+        )
+    }
+
+
+    private fun getFirstEmptyFieldIndexAfterFocusedIndex(
+        code: List<Int?>,
+        currentFocusedIndex: Int
+    ): Int {
+        code.forEachIndexed { index, number ->
+            if (index <= currentFocusedIndex) {
+                return@forEachIndexed
+            }
+            if (number == null) {
+                return index
+            }
+        }
+        return currentFocusedIndex
     }
 
 }
