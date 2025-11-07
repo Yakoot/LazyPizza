@@ -46,13 +46,10 @@ class OtpViewModel : ViewModel() {
 
         val wasNumberRemoved = number == null
 
-        val newFocusedIndex = if (wasNumberRemoved || state.value.code.getOrNull(index) != null) {
-            state.value.focusedIndex
+        val newFocusedIndex = if (wasNumberRemoved) {
+            state.value.focusedIndex?.minus(1)?.coerceAtLeast(0)
         } else {
-            getNextFocusedTextFieldIndex(
-                currentCode = state.value.code,
-                currentFocusedIndex = state.value.focusedIndex
-            )
+            state.value.focusedIndex?.plus(1)?.coerceAtMost(DIGITS_COUNT - 1)
         }
 
         val focusChanged = newFocusedIndex != state.value.focusedIndex
@@ -90,24 +87,6 @@ class OtpViewModel : ViewModel() {
 
     fun getPreviousFocusedIndex(currentIndex: Int?): Int? {
         return currentIndex?.minus(1)?.coerceAtLeast(0)
-    }
-
-    private fun getNextFocusedTextFieldIndex(
-        currentCode: List<Int?>,
-        currentFocusedIndex: Int?
-    ): Int? {
-        if (currentFocusedIndex == null) {
-            return null
-        }
-
-        if (currentFocusedIndex == DIGITS_COUNT - 1) {
-            return currentFocusedIndex
-        }
-
-        return getFirstEmptyFieldIndexAfterFocusedIndex(
-            code = currentCode,
-            currentFocusedIndex = currentFocusedIndex
-        )
     }
 
 
