@@ -5,7 +5,8 @@ data class SignInState(
     val isPhoneSubmitEnabled: Boolean = false,
     val isCodeSubmitEnabled: Boolean = false,
     val isResendEnabled: Boolean = false,
-    val isOtpFieldVisible: Boolean = true,
-    val isCodeSent: Boolean = true,
-    val resendText: String = "",
+    val isOtpFieldVisible: Boolean = false,
+    val isCodeSent: Boolean = false,
+    val codeError: Boolean = false,
+    val resendCountdownTimer: String = "",
 )

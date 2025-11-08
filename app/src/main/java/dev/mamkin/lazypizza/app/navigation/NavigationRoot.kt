@@ -45,6 +45,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.auth.presentation.signin.SignInRoot
+import dev.mamkin.lazypizza.auth.presentation.signin.SignInViewModel
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.presentation.cart.CartRoot
@@ -52,6 +53,7 @@ import dev.mamkin.lazypizza.order.presentation.history.HistoryRoot
 import dev.mamkin.lazypizza.order.presentation.home.HomeRoot
 import dev.mamkin.lazypizza.order.presentation.productDetails.ProductDetailsRoot
 import kotlinx.serialization.Serializable
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
 @Composable
@@ -243,7 +245,9 @@ private fun AppNavDisplay(
                 }
 
                 is SignIn -> NavEntry(key) {
+                    val viewModel: SignInViewModel = koinViewModel()
                     SignInRoot(
+                        viewModel = viewModel,
                         backToHome = {
                             backStack.apply {
                                 clear()

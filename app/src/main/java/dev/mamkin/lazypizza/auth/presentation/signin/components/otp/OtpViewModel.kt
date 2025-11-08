@@ -1,13 +1,20 @@
 package dev.mamkin.lazypizza.auth.presentation.signin.components.otp
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class OtpViewModel : ViewModel() {
     private val _state = MutableStateFlow(OtpState())
     val state = _state.asStateFlow()
+
+    private val _event = Channel<OtpEvent>()
+    val event = _event.receiveAsFlow()
 
     fun onAction(action: OtpAction) {
         when (action) {
@@ -66,6 +73,10 @@ class OtpViewModel : ViewModel() {
                 }
             )
         }
+
+        viewModelScope.launch {
+            _event.send(OtpEvent.CodeChanged(newCode.filterNotNull().joinToString("")))
+        }
     }
 
     private fun onKeyboardBack() {
@@ -89,19 +100,7 @@ class OtpViewModel : ViewModel() {
         return currentIndex?.minus(1)?.coerceAtLeast(0)
     }
 
-
-    private fun getFirstEmptyFieldIndexAfterFocusedIndex(
-        code: List<Int?>,
-        currentFocusedIndex: Int
-    ): Int {
-        code.forEachIndexed { index, number ->
-            if (index <= currentFocusedIndex) {
-                return@forEachIndexed
-            }
-            if (number == null) {
-                return index
-            }
-        }
-        return currentFocusedIndex
+    fun clear() {
+        _state.update { OtpState() }
     }
 }

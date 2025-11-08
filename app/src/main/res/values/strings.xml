@@ -20,4 +20,6 @@
     <string name="sign_in_button_text_confirm">Confirm</string>
     <string name="sign_in_continue_without_sign_in">Continue without signing in</string>
     <string name="sign_in_resend_button">Resend code</string>
+    <string name="sign_in_resend_countdown_text">You can request a new code in %s</string>
+    <string name="sign_in_code_error_text">Incorrect code. Please try again</string>
 </resources>

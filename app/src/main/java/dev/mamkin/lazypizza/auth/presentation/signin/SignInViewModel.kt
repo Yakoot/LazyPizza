@@ -3,9 +3,12 @@ package dev.mamkin.lazypizza.auth.presentation.signin
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.mamkin.lazypizza.auth.domain.AuthException
 import dev.mamkin.lazypizza.auth.domain.AuthRepository
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.DIGITS_COUNT
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
@@ -23,6 +26,9 @@ class SignInViewModel(
     private val phoneRegex = "^\\+[0-9]{10,13}$".toRegex()
 
     private var verificationId: String? = null
+    private var currentCode: String = ""
+
+    private var resendCountdownJob: Job? = null
 
     private val _event = Channel<SignInEvent>()
     val event = _event.receiveAsFlow()
@@ -58,9 +64,46 @@ class SignInViewModel(
             }
 
             is SignInAction.OnPhoneNumberSubmitted -> onPhoneNumberSubmit(action.activity)
-            SignInAction.OnResendClicked -> TODO()
-            SignInAction.OnSignInClicked -> TODO()
-            SignInAction.OnCodeSubmitted -> TODO()
+            is SignInAction.OnResendClicked -> onResendClicked(action.activity)
+            SignInAction.OnCodeSubmitted -> onCodeSubmited()
+            is SignInAction.OnCodeChanged -> onCodeChanged(action.code)
+        }
+    }
+
+    private fun onCodeSubmited() {
+        viewModelScope.launch {
+            verificationId?.let {
+                authRepository.verifyCode(it, currentCode)
+                    .onSuccess { _event.send(SignInEvent.BackToHome) }
+                    .onFailure { throwable ->
+                        when (throwable as? AuthException) {
+                            is AuthException.InvalidVerificationCode -> {
+                                _state.update {
+                                    it.copy(
+                                        codeError = true
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                _event.send(
+                                    SignInEvent.SnackbarError(
+                                        throwable.message ?: "Unknown error"
+                                    )
+                                )
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    private fun onCodeChanged(code: String) {
+        currentCode = code
+        _state.update {
+            it.copy(
+                isCodeSubmitEnabled = code.length == DIGITS_COUNT
+            )
         }
     }
 
@@ -81,7 +124,54 @@ class SignInViewModel(
                             isOtpFieldVisible = true
                         )
                     }
+
+                    startResendCountdown()
                 }
+                .onFailure { throwable ->
+                    _event.send(SignInEvent.SnackbarError(throwable.message ?: "Unknown error"))
+                }
+        }
+    }
+
+    private fun onResendClicked(activity: Activity) {
+        val phoneNumber = _state.value.phoneNumber
+        viewModelScope.launch {
+            authRepository.sendVerificationCode(phoneNumber, activity)
+                .onSuccess {
+                    verificationId = it
+                    startResendCountdown()
+                }
+        }
+    }
+
+    private fun startResendCountdown() {
+        resendCountdownJob?.cancel()
+
+        resendCountdownJob = viewModelScope.launch {
+            val totalSeconds = 60
+
+            for (secondsRemaining in totalSeconds downTo 0) {
+                val minutes = secondsRemaining / 60
+                val seconds = secondsRemaining % 60
+                val timeText = String.format("%02d:%02d", minutes, seconds)
+
+                _state.update {
+                    it.copy(
+                        resendCountdownTimer = timeText,
+                        isResendEnabled = secondsRemaining == 0
+                    )
+                }
+
+                if (secondsRemaining > 0) {
+                    delay(1000L)
+                }
+            }
+
+            _state.update {
+                it.copy(
+                    resendCountdownTimer = ""
+                )
+            }
         }
     }
 
@@ -121,6 +211,10 @@ class SignInViewModel(
             }
         }
         return currentFocusedIndex
+    }
+
+    fun clear() {
+        _state.update { SignInState() }
     }
 
 }

@@ -1,6 +1,7 @@
 package dev.mamkin.lazypizza.auth.presentation.signin.components.otp
 
 import android.view.KeyEvent
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -35,6 +36,7 @@ fun OtpInputField(
     modifier: Modifier = Modifier,
     number: Int?,
     isFocused: Boolean = false,
+    error: Boolean = false,
     focusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
     onNumberChanged: (Int?) -> Unit,
@@ -74,6 +76,11 @@ fun OtpInputField(
             .onFocusChanged {
                 onFocusChanged(it.isFocused)
             }
+            .then(
+                if (error) {
+                    Modifier.border(1.dp, AppTheme.colors.primary, CircleShape)
+                } else Modifier
+            )
             .onKeyEvent {
                 val didPressDelete = it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL
                 if (didPressDelete && number == null) {
@@ -89,12 +96,13 @@ fun OtpInputField(
             }
 
         },
+        isError = error,
         shape = CircleShape,
         textStyle = textStyle,
         colors = AppTextFieldDefaults.colors().copy(
             focusedContainerColor = AppTheme.colors.surfaceHigher,
             unfocusedContainerColor = AppTheme.colors.surfaceHighest,
-            cursorColor = AppTheme.colors.textSecondary
+            cursorColor = AppTheme.colors.textSecondary,
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number

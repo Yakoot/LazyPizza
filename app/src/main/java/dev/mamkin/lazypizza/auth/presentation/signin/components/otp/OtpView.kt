@@ -24,6 +24,7 @@ const val DIGITS_COUNT = 6
 fun OtpView(
     modifier: Modifier = Modifier,
     state: OtpState,
+    error: Boolean = false,
     focusRequesters: List<FocusRequester>,
     onAction: (OtpAction) -> Unit,
 ) {
@@ -42,6 +43,7 @@ fun OtpView(
                     }
                 },
                 isFocused = index == state.focusedIndex,
+                error = error,
                 onNumberChanged = { newNumber ->
                     onAction(OtpAction.OnEnterNumber(newNumber, index))
                 },
@@ -51,19 +53,6 @@ fun OtpView(
             )
         }
     }
-}
-
-data class OtpState(
-    val code: List<Int?> = (1..DIGITS_COUNT).map { null },
-    val focusedIndex: Int? = null,
-    val isValid: Boolean? = null,
-    val focusChangeId: Long = 0L
-)
-
-sealed interface OtpAction {
-    data class OnEnterNumber(val number: Int?, val index: Int) : OtpAction
-    data class OnChangeFieldFocused(val index: Int) : OtpAction
-    data object OnKeyboardBack : OtpAction
 }
 
 @Preview

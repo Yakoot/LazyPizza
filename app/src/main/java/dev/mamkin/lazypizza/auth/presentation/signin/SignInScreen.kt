@@ -9,18 +9,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +34,7 @@ import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.auth.presentation.signin.components.SignInTextField
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.DIGITS_COUNT
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.OtpAction
+import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.OtpEvent
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.OtpState
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.OtpView
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.OtpViewModel
@@ -36,20 +43,44 @@ import dev.mamkin.lazypizza.core.presentation.designsystem.buttons.TextButton
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 import dev.mamkin.lazypizza.core.presentation.util.ObserveAsEvents
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SignInRoot(
-    viewModel: SignInViewModel = koinViewModel(),
+    viewModel: SignInViewModel,
     otpViewModel: OtpViewModel = koinViewModel(),
     backToHome: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val otpState by otpViewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clear()
+            otpViewModel.clear()
+        }
+    }
 
     ObserveAsEvents(viewModel.event) {
         when (it) {
             SignInEvent.BackToHome -> backToHome()
+            is SignInEvent.SnackbarError -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(message = it.message)
+                }
+            }
+        }
+    }
+
+    ObserveAsEvents(otpViewModel.event) {
+        when (it) {
+            is OtpEvent.CodeChanged -> {
+                viewModel.onAction(SignInAction.OnCodeChanged(it.code))
+            }
         }
     }
 
@@ -57,7 +88,8 @@ fun SignInRoot(
         state = state,
         otpState = otpState,
         onAction = viewModel::onAction,
-        onOtpAction = otpViewModel::onAction
+        onOtpAction = otpViewModel::onAction,
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -66,7 +98,8 @@ fun SignInScreen(
     state: SignInState,
     otpState: OtpState,
     onAction: (SignInAction) -> Unit,
-    onOtpAction: (OtpAction) -> Unit
+    onOtpAction: (OtpAction) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val activity = LocalActivity.current
     val focusRequesters = remember {
@@ -89,7 +122,8 @@ fun SignInScreen(
         }
     }
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
+        contentWindowInsets = WindowInsets.safeDrawing,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -130,6 +164,7 @@ fun SignInScreen(
                 OtpView(
                     state = otpState,
                     focusRequesters = focusRequesters,
+                    error = state.codeError,
                     onAction = {
                         when (it) {
                             is OtpAction.OnEnterNumber -> {
@@ -143,6 +178,16 @@ fun SignInScreen(
                         onOtpAction(it)
                     },
                 )
+                if (state.codeError) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        modifier = Modifier.align(Alignment.Start),
+                        text = stringResource(R.string.sign_in_code_error_text),
+                        color = AppTheme.colors.primary,
+                        style = AppTheme.typography.body4Regular,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -177,15 +222,22 @@ fun SignInScreen(
                 TextButton(
                     text = stringResource(R.string.sign_in_resend_button),
                     onClick = {
-                        onAction(SignInAction.OnResendClicked)
+                        activity?.let {
+                            onAction(SignInAction.OnResendClicked(it))
+                        }
                     },
                 )
             } else {
-                Text(
-                    text = state.resendText,
-                    color = AppTheme.colors.textSecondary,
-                    style = AppTheme.typography.body3Regular
-                )
+                if (state.isCodeSent) {
+                    Text(
+                        text = stringResource(
+                            R.string.sign_in_resend_countdown_text,
+                            state.resendCountdownTimer
+                        ),
+                        color = AppTheme.colors.textSecondary,
+                        style = AppTheme.typography.body3Regular
+                    )
+                }
             }
         }
     }
@@ -196,7 +248,11 @@ fun SignInScreen(
 private fun Preview() {
     LazyPizzaTheme {
         SignInScreen(
-            state = SignInState(),
+            state = SignInState().copy(
+                isCodeSent = true,
+                isOtpFieldVisible = true,
+                codeError = true
+            ),
             otpState = OtpState(),
             onAction = {},
             onOtpAction = {}
