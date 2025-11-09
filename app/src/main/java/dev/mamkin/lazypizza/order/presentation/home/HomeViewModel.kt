@@ -2,6 +2,7 @@ package dev.mamkin.lazypizza.order.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.mamkin.lazypizza.auth.domain.AuthRepository
 import dev.mamkin.lazypizza.order.domain.CartRepository
 import dev.mamkin.lazypizza.order.domain.MenuRepository
 import dev.mamkin.lazypizza.order.domain.models.ProductType
@@ -22,7 +23,8 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     val menuRepository: MenuRepository,
-    val cartRepository: CartRepository
+    val cartRepository: CartRepository,
+    val authRepository: AuthRepository
 ) : ViewModel() {
     private var hasLoadedInitialData = false
     private var initialMenuUi = emptyList<ProductSectionUi>()
@@ -41,6 +43,7 @@ class HomeViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 /** Load initial data here **/
+                loadAuthState()
                 loadMenu()
                 observeSearchAndCart()
                 hasLoadedInitialData = true
@@ -106,6 +109,18 @@ class HomeViewModel(
         }
     }
 
+    private fun loadAuthState() {
+        viewModelScope.launch {
+            val isSignedIn = authRepository.isUserSignedIn()
+
+            _state.update {
+                it.copy(
+                    isSignedIn = isSignedIn
+                )
+            }
+        }
+    }
+
     suspend fun loadMenu() {
         val menu = menuRepository.getMenu()
         initialMenuUi = menu.toProductsUi()
@@ -122,7 +137,19 @@ class HomeViewModel(
             is HomeAction.DeleteClick -> onDeleteClick(action.id)
             is HomeAction.MinusClick -> onMinusClick(action.id)
             is HomeAction.PlusClick -> onPlusClick(action.id)
+            is HomeAction.LogOutClick -> onLogOutClick()
             else -> Unit
+        }
+    }
+
+    private fun onLogOutClick() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _state.update {
+                it.copy(
+                    isSignedIn = false
+                )
+            }
         }
     }
 

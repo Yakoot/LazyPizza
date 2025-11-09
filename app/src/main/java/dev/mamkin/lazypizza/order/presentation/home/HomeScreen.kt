@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -17,10 +18,13 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,8 +34,10 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import coil.compose.AsyncImage
 import dev.mamkin.lazypizza.R
+import dev.mamkin.lazypizza.core.presentation.designsystem.dialogs.AppConfirmDialog
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.AppTheme
 import dev.mamkin.lazypizza.core.presentation.designsystem.theme.LazyPizzaTheme
 import dev.mamkin.lazypizza.order.domain.models.Menu
@@ -63,7 +70,8 @@ import java.util.UUID
 @Composable
 fun HomeRoot(
     viewModel: HomeViewModel = koinViewModel(),
-    navigateToDetails: (String) -> Unit
+    navigateToDetails: (String) -> Unit,
+    navigateToLogIn: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -84,6 +92,7 @@ fun HomeRoot(
         { action: HomeAction ->
             when (action) {
                 is HomeAction.PizzaClick -> navigateToDetails(action.pizza)
+                is HomeAction.LogInClick -> navigateToLogIn()
                 else -> viewModel.onAction(action)
             }
         }
@@ -106,6 +115,9 @@ fun HomeScreen(
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isWideScreen = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
     val columnsCount = if (isWideScreen) 2 else 1
+
+    var isLogOutDialogVisible by remember { mutableStateOf(false) }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets(0),
@@ -139,6 +151,44 @@ fun HomeScreen(
                             style = AppTheme.typography.body1Regular,
                             color = AppTheme.colors.textPrimary
                         )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        if (state.isSignedIn) {
+                            IconButton(
+                                modifier = Modifier.size(32.dp),
+                                onClick = {
+                                    isLogOutDialogVisible = true
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = AppTheme.colors.primary8,
+                                    contentColor = AppTheme.colors.primary
+                                ),
+                                shape = CircleShape
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.log_out),
+                                    contentDescription = null
+                                )
+                            }
+                        } else {
+                            IconButton(
+                                modifier = Modifier.size(32.dp),
+                                onClick = {
+                                    onAction(HomeAction.LogInClick)
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = AppTheme.colors.textSecondary8,
+                                    contentColor = AppTheme.colors.textSecondary
+                                ),
+                                shape = CircleShape
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.user),
+                                    contentDescription = null
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.width(16.dp))
                     }
                 }
@@ -147,6 +197,22 @@ fun HomeScreen(
     ) { contentPadding ->
         val lazyListState = rememberLazyGridState()
         val coroutineScope = rememberCoroutineScope()
+
+        if (isLogOutDialogVisible) {
+            AppConfirmDialog(
+                title = "Are you sure you want to log out?",
+                confirmButtonText = "Log out",
+                dismissButtonText = "Cancel",
+                onDismiss = {
+                    isLogOutDialogVisible = false
+                },
+                onConfirm = {
+                    isLogOutDialogVisible = false
+                    onAction(HomeAction.LogOutClick)
+                }
+            )
+        }
+
         Column(
             modifier = Modifier
                 .padding(contentPadding)

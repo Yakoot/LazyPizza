@@ -58,7 +58,7 @@ import org.koin.compose.koinInject
 
 @Composable
 fun NavigationRoot(modifier: Modifier = Modifier) {
-    val backStack = rememberNavBackStack(SignIn)
+    val backStack = rememberNavBackStack(Menu)
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isWideScreen = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
 
@@ -209,6 +209,11 @@ private fun AppNavDisplay(
                     HomeRoot(
                         navigateToDetails = { pizza ->
                             backStack.add(ProductDetails(pizza))
+                        },
+                        navigateToLogIn = {
+                            backStack.apply {
+                                add(SignIn)
+                            }
                         }
                     )
                 }
@@ -237,7 +242,6 @@ private fun AppNavDisplay(
                     HistoryRoot(
                         goToSignIn = {
                             backStack.apply {
-                                clear()
                                 add(SignIn)
                             }
                         }

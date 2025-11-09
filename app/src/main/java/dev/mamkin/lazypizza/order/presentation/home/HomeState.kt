@@ -13,6 +13,7 @@ data class HomeState(
     val searchValue: String = "",
     val noResults: Boolean = false,
     val isLoading: Boolean = false,
+    val isSignedIn: Boolean = false,
 )
 
 @Immutable
