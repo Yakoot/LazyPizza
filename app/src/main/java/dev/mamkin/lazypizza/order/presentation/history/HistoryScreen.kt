@@ -79,6 +79,10 @@ fun HistoryScreen(
                         }
                     )
                 }
+
+                HistoryState.LoggedIn -> {
+                    Text(text = "History")
+                }
             }
         }
     }

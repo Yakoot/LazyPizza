@@ -43,9 +43,8 @@ class HomeViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 /** Load initial data here **/
-                loadAuthState()
                 loadMenu()
-                observeSearchAndCart()
+                observeSearchCartAndAuth()
                 hasLoadedInitialData = true
             }
         }
@@ -57,18 +56,17 @@ class HomeViewModel(
             )
         )
 
-    private fun observeSearchAndCart() {
+    private fun observeSearchCartAndAuth() {
         viewModelScope.launch {
             combine(
                 _searchQuery,
-                cartRepository.cart
-            ) { query, cart ->
-                // Получаем актуальную карту товаров в корзине
+                cartRepository.cart,
+                authRepository.observeAuthState()
+            ) { query, cart, isSignedIn ->
                 val itemsMap = cart
                     .filterIsInstance<CartItem.Other>()
                     .associate { it.productId to it.quantity }
 
-                // Шаг 1: Фильтрация меню по поисковому запросу
                 val filteredMenu = if (query.isBlank()) {
                     initialMenuUi
                 } else {
@@ -81,7 +79,6 @@ class HomeViewModel(
                         .filter { it.products.isNotEmpty() }
                 }
 
-                // Шаг 2: Обновление отфильтрованного меню данными из корзины
                 val newMenuUi = filteredMenu.map { productsSection ->
                     val newProducts = productsSection.products.map { product ->
                         val quantity = itemsMap[product.id] ?: 0
@@ -95,29 +92,17 @@ class HomeViewModel(
                     productsSection.copy(products = newProducts)
                 }
 
-                // Шаг 3: Обновление состояния UI
                 _state.update {
                     it.copy(
                         isLoading = false,
                         searchValue = query,
                         products = newMenuUi,
                         navigationChips = newMenuUi.toNavigationChips(),
-                        noResults = newMenuUi.isEmpty() && query.isNotBlank()
+                        noResults = newMenuUi.isEmpty() && query.isNotBlank(),
+                        isSignedIn = isSignedIn
                     )
                 }
             }.collect()
-        }
-    }
-
-    private fun loadAuthState() {
-        viewModelScope.launch {
-            val isSignedIn = authRepository.isUserSignedIn()
-
-            _state.update {
-                it.copy(
-                    isSignedIn = isSignedIn
-                )
-            }
         }
     }
 
@@ -145,6 +130,7 @@ class HomeViewModel(
     private fun onLogOutClick() {
         viewModelScope.launch {
             authRepository.signOut()
+            cartRepository.clearCart()
             _state.update {
                 it.copy(
                     isSignedIn = false

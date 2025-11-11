@@ -10,6 +10,9 @@ import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import dev.mamkin.lazypizza.auth.domain.AuthException
 import dev.mamkin.lazypizza.auth.domain.AuthRepository
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
@@ -104,5 +107,17 @@ class FirebaseAuthRepository(
 
     override fun getCurrentUserId(): String? {
         return auth.currentUser?.uid
+    }
+
+    override fun observeAuthState(): Flow<Boolean> = callbackFlow {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            trySend(firebaseAuth.currentUser != null)
+        }
+
+        auth.addAuthStateListener(authStateListener)
+
+        awaitClose {
+            auth.removeAuthStateListener(authStateListener)
+        }
     }
 }
