@@ -9,4 +9,5 @@ data class SignInState(
     val isCodeSent: Boolean = false,
     val codeError: Boolean = false,
     val resendCountdownTimer: String = "",
+    val isLoading: Boolean = false,
 )

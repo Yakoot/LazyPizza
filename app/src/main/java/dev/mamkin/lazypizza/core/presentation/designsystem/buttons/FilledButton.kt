@@ -1,17 +1,21 @@
 package dev.mamkin.lazypizza.core.presentation.designsystem.buttons
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -26,6 +30,7 @@ fun FilledButton(
     modifier: Modifier = Modifier,
     text: String,
     enabled: Boolean = true,
+    isLoading: Boolean = false,
     onClick: () -> Unit,
 ) {
     val brush = Brush.linearGradient(
@@ -40,7 +45,7 @@ fun FilledButton(
                 .height(48.dp)
                 .clip(CircleShape)
                 .then(
-                    if (enabled) {
+                    if (enabled && !isLoading) {
                         Modifier.background(brush)
                     } else {
                         Modifier.background(AppTheme.colors.textPrimary8)
@@ -52,15 +57,27 @@ fun FilledButton(
                 disabledContainerColor = Color.Transparent,
                 disabledContentColor = AppTheme.colors.textPrimary.copy(alpha = 0.38f)
             ),
-            enabled = enabled,
+            enabled = enabled && !isLoading,
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 9.dp),
             shape = CircleShape,
             onClick = onClick
         ) {
-            Text(
-                text = text,
-                style = AppTheme.typography.title3
-            )
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = AppTheme.colors.textOnPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = text,
+                        style = AppTheme.typography.title3
+                    )
+                }
+            }
         }
     }
 
@@ -74,7 +91,7 @@ private fun Preview() {
         Column {
             FilledButton(text = "Button", onClick = {})
             FilledButton(text = "Button", onClick = {}, enabled = false)
-
+            FilledButton(text = "Button", onClick = {}, isLoading = true)
         }
     }
 }

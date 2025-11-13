@@ -73,9 +73,14 @@ class SignInViewModel(
     private fun onCodeSubmited() {
         viewModelScope.launch {
             verificationId?.let {
+                _state.update { it.copy(isLoading = true) }
                 authRepository.verifyCode(it, currentCode)
-                    .onSuccess { _event.send(SignInEvent.BackToHome) }
+                    .onSuccess {
+                        _state.update { it.copy(isLoading = false) }
+                        _event.send(SignInEvent.BackToHome)
+                    }
                     .onFailure { throwable ->
+                        _state.update { it.copy(isLoading = false) }
                         when (throwable as? AuthException) {
                             is AuthException.InvalidVerificationCode -> {
                                 _state.update {
@@ -114,6 +119,7 @@ class SignInViewModel(
     private fun onPhoneNumberSubmit(activity: Activity) {
         val phoneNumber = _state.value.phoneNumber
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             authRepository.sendVerificationCode(phoneNumber, activity)
                 .onSuccess {
                     verificationId = it
@@ -121,13 +127,15 @@ class SignInViewModel(
                     _state.update {
                         it.copy(
                             isCodeSent = true,
-                            isOtpFieldVisible = true
+                            isOtpFieldVisible = true,
+                            isLoading = false
                         )
                     }
 
                     startResendCountdown()
                 }
                 .onFailure { throwable ->
+                    _state.update { it.copy(isLoading = false) }
                     _event.send(SignInEvent.SnackbarError(throwable.message ?: "Unknown error"))
                 }
         }
@@ -136,10 +144,16 @@ class SignInViewModel(
     private fun onResendClicked(activity: Activity) {
         val phoneNumber = _state.value.phoneNumber
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             authRepository.sendVerificationCode(phoneNumber, activity)
                 .onSuccess {
                     verificationId = it
+                    _state.update { it.copy(isLoading = false) }
                     startResendCountdown()
+                }
+                .onFailure { throwable ->
+                    _state.update { it.copy(isLoading = false) }
+                    _event.send(SignInEvent.SnackbarError(throwable.message ?: "Unknown error"))
                 }
         }
     }
