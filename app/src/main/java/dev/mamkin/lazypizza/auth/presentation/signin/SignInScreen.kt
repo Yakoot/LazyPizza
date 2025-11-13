@@ -5,15 +5,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import dev.mamkin.lazypizza.R
 import dev.mamkin.lazypizza.auth.presentation.signin.components.SignInTextField
 import dev.mamkin.lazypizza.auth.presentation.signin.components.otp.DIGITS_COUNT
@@ -101,6 +104,8 @@ fun SignInScreen(
     onOtpAction: (OtpAction) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isWideScreen = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
     val activity = LocalActivity.current
     val focusRequesters = remember {
         (1..DIGITS_COUNT).map { FocusRequester() }
@@ -127,7 +132,8 @@ fun SignInScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxHeight()
+                .widthIn(max = 400.dp)
                 .padding(horizontal = 16.dp)
                 .padding(paddingValues = paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
